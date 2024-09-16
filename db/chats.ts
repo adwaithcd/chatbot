@@ -11,6 +11,21 @@ export const getChatById = async (chatId: string) => {
   return chat
 }
 
+export const getFavoriteChatsByWorkspaceId = async (workspaceId: string) => {
+  const { data: favoriteChats, error } = await supabase
+    .from("chats")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("is_favorite", true)
+    .order("updated_at", { ascending: false })
+
+  if (!favoriteChats) {
+    throw new Error(error.message)
+  }
+
+  return favoriteChats
+}
+
 export const getChatsByWorkspaceId = async (workspaceId: string) => {
   const { data: chats, error } = await supabase
     .from("chats")
@@ -59,6 +74,24 @@ export const updateChat = async (
   const { data: updatedChat, error } = await supabase
     .from("chats")
     .update(chat)
+    .eq("id", chatId)
+    .select("*")
+    .single()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return updatedChat
+}
+
+export const toggleChatFavorite = async (
+  chatId: string,
+  isFavorite: boolean
+) => {
+  const { data: updatedChat, error } = await supabase
+    .from("chats")
+    .update({ is_favorite: isFavorite })
     .eq("id", chatId)
     .select("*")
     .single()

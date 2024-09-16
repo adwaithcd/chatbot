@@ -30,12 +30,16 @@ CREATE TABLE IF NOT EXISTS chats (
     name TEXT NOT NULL CHECK (char_length(name) <= 200),
     prompt TEXT NOT NULL CHECK (char_length(prompt) <= 100000),
     temperature REAL NOT NULL
+
+    --FAVORITE
+    is_favorite BOOLEAN DEFAULT FALSE
 );
 
 -- INDEXES --
 
 CREATE INDEX idx_chats_user_id ON chats (user_id);
 CREATE INDEX idx_chats_workspace_id ON chats (workspace_id);
+CREATE INDEX idx_chats_is_favorite ON chats(is_favorite);
 
 -- RLS --
 

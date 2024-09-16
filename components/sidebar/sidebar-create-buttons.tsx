@@ -13,14 +13,18 @@ import { CreatePreset } from "./items/presets/create-preset"
 import { CreatePrompt } from "./items/prompts/create-prompt"
 import { CreateTool } from "./items/tools/create-tool"
 
+import { UilEdit, UilLeftArrowFromLeft } from "@iconscout/react-unicons"
+
 interface SidebarCreateButtonsProps {
   contentType: ContentType
   hasData: boolean
+  onCloseSideBar: () => void
 }
 
 export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   contentType,
-  hasData
+  hasData,
+  onCloseSideBar
 }) => {
   const { profile, selectedWorkspace, folders, setFolders } =
     useContext(ChatbotUIContext)
@@ -97,7 +101,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
 
   return (
     <div className="flex w-full space-x-2">
-      <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
+      {/* <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
         <IconPlus className="mr-1" size={20} />
         New{" "}
         {contentType.charAt(0).toUpperCase() +
@@ -108,9 +112,27 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
         <Button className="size-[36px] p-1" onClick={handleCreateFolder}>
           <IconFolderPlus size={20} />
         </Button>
-      )}
+      )} */}
 
-      {isCreatingPrompt && (
+      <div className="flex w-full justify-between">
+        <Button
+          className="flex h-[36px]"
+          variant="ghost"
+          onClick={getCreateFunction()}
+        >
+          <UilEdit className="mr-1" size={20} />
+        </Button>
+
+        <Button
+          className="flex h-[36px]"
+          variant="ghost"
+          onClick={onCloseSideBar}
+        >
+          <UilLeftArrowFromLeft size={20} />
+        </Button>
+      </div>
+
+      {/* {isCreatingPrompt && (
         <CreatePrompt
           isOpen={isCreatingPrompt}
           onOpenChange={setIsCreatingPrompt}
@@ -151,7 +173,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
           isOpen={isCreatingModel}
           onOpenChange={setIsCreatingModel}
         />
-      )}
+      )} */}
     </div>
   )
 }

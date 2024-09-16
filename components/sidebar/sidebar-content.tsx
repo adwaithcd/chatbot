@@ -9,12 +9,14 @@ interface SidebarContentProps {
   contentType: ContentType
   data: DataListType
   folders: Tables<"folders">[]
+  onCloseSideBar: () => void
 }
 
 export const SidebarContent: FC<SidebarContentProps> = ({
   contentType,
   data,
-  folders
+  folders,
+  onCloseSideBar
 }) => {
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -29,6 +31,7 @@ export const SidebarContent: FC<SidebarContentProps> = ({
         <SidebarCreateButtons
           contentType={contentType}
           hasData={data.length > 0}
+          onCloseSideBar={onCloseSideBar}
         />
       </div>
 

@@ -8,13 +8,25 @@ import { WorkspaceSwitcher } from "../utility/workspace-switcher"
 import { WorkspaceSettings } from "../workspace/workspace-settings"
 import { SidebarContent } from "./sidebar-content"
 
+import { WithTooltip } from "../ui/with-tooltip"
+import { ProfileSettings } from "../utility/profile-settings"
+import { Settings } from "lucide-react"
+import { UilRobot } from "@iconscout/react-unicons"
+import { NewProfileSettings } from "../utility/new-profile-settings" // Import the new component
+
 interface SidebarProps {
   contentType: ContentType
   showSidebar: boolean
+  onToggleSideBar: () => void
 }
 
-export const Sidebar: FC<SidebarProps> = ({ contentType, showSidebar }) => {
+export const Sidebar: FC<SidebarProps> = ({
+  contentType,
+  showSidebar,
+  onToggleSideBar
+}) => {
   const {
+    profile,
     folders,
     chats,
     presets,
@@ -45,67 +57,97 @@ export const Sidebar: FC<SidebarProps> = ({ contentType, showSidebar }) => {
     folders: Tables<"folders">[]
   ) => {
     return (
-      <SidebarContent contentType={contentType} data={data} folders={folders} />
+      <SidebarContent
+        contentType={contentType}
+        data={data}
+        folders={folders}
+        onCloseSideBar={onToggleSideBar}
+      />
     )
   }
 
   return (
-    <TabsContent
-      className="m-0 w-full space-y-2"
+    <div
+      className="flex h-full flex-col"
       style={{
         // Sidebar - SidebarSwitcher
-        minWidth: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px",
-        maxWidth: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px",
-        width: showSidebar ? `calc(${SIDEBAR_WIDTH}px - 60px)` : "0px"
+        minWidth: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",
+        maxWidth: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",
+        width: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px"
       }}
-      value={contentType}
     >
-      <div className="flex h-full flex-col p-3">
-        <div className="flex items-center border-b-2 pb-2">
-          <WorkspaceSwitcher />
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between p-3">
+          {/* <WorkspaceSwitcher />
+          <WorkspaceSettings /> */}
 
-          <WorkspaceSettings />
+          <div className="flex items-center space-x-2">
+            <UilRobot scale={0.3} />
+            <span className="text-lg font-semibold">EDUCHAT</span>
+          </div>
         </div>
 
-        {(() => {
-          switch (contentType) {
-            case "chats":
-              return renderSidebarContent("chats", chats, chatFolders)
+        <div className="min-h-0 grow overflow-y-auto px-3">
+          {(() => {
+            switch (contentType) {
+              case "chats":
+                return renderSidebarContent("chats", chats, chatFolders)
 
-            case "presets":
-              return renderSidebarContent("presets", presets, presetFolders)
+              case "presets":
+                return renderSidebarContent("presets", presets, presetFolders)
 
-            case "prompts":
-              return renderSidebarContent("prompts", prompts, promptFolders)
+              case "prompts":
+                return renderSidebarContent("prompts", prompts, promptFolders)
 
-            case "files":
-              return renderSidebarContent("files", files, filesFolders)
+              case "files":
+                return renderSidebarContent("files", files, filesFolders)
 
-            case "collections":
-              return renderSidebarContent(
-                "collections",
-                collections,
-                collectionFolders
-              )
+              case "collections":
+                return renderSidebarContent(
+                  "collections",
+                  collections,
+                  collectionFolders
+                )
 
-            case "assistants":
-              return renderSidebarContent(
-                "assistants",
-                assistants,
-                assistantFolders
-              )
+              case "assistants":
+                return renderSidebarContent(
+                  "assistants",
+                  assistants,
+                  assistantFolders
+                )
 
-            case "tools":
-              return renderSidebarContent("tools", tools, toolFolders)
+              case "tools":
+                return renderSidebarContent("tools", tools, toolFolders)
 
-            case "models":
-              return renderSidebarContent("models", models, modelFolders)
+              case "models":
+                return renderSidebarContent("models", models, modelFolders)
 
-            default:
-              return null
-          }
-        })()}
+              default:
+                return null
+            }
+          })()}
+        </div>
+
+        <div className="bg-background sticky bottom-0 flex items-center justify-between p-3">
+          <div className="flex items-center space-x-2">
+            <WithTooltip
+              display={<div>Profile Settings</div>}
+              trigger={<NewProfileSettings />}
+            />
+            <span className="text-sm font-medium">
+              {profile?.display_name || "User"}
+            </span>
+          </div>
+          <WithTooltip
+            display={<div>Settings</div>}
+            trigger={
+              <button className="rounded-full p-1 hover:opacity-50">
+                <Settings size={20} />
+              </button>
+            }
+          />
+        </div>
       </div>
-    </TabsContent>
+    </div>
   )
 }

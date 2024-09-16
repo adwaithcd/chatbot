@@ -19,6 +19,7 @@ import { LLMID } from "@/types"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { ReactNode, useContext, useEffect, useState } from "react"
 import Loading from "../loading"
+import ProfileSettings from "./profile/page"
 
 interface WorkspaceLayoutProps {
   children: ReactNode
@@ -179,5 +180,19 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     return <Loading />
   }
 
-  return <Dashboard>{children}</Dashboard>
+  const isProfilePage = searchParams.get("page") === "profile"
+
+  return (
+    <Dashboard>
+      {isProfilePage ? (
+        // Render the profile page
+        <div className="flex-1 overflow-auto">
+          <ProfileSettings />
+        </div>
+      ) : (
+        // Render the regular workspace content
+        <>{children}</>
+      )}
+    </Dashboard>
+  )
 }

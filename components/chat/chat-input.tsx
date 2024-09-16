@@ -20,6 +20,7 @@ import { useChatHandler } from "./chat-hooks/use-chat-handler"
 import { useChatHistoryHandler } from "./chat-hooks/use-chat-history"
 import { usePromptAndCommand } from "./chat-hooks/use-prompt-and-command"
 import { useSelectFileHandler } from "./chat-hooks/use-select-file-handler"
+import { UilEnter } from "@iconscout/react-unicons"
 
 interface ChatInputProps {}
 
@@ -241,7 +242,7 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
           className="ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring text-md flex w-full resize-none rounded-md border-none bg-transparent px-14 py-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={t(
             // `Ask anything. Type "@" for assistants, "/" for prompts, "#" for files, and "!" for tools.`
-            `Ask anything. Type @  /  #  !`
+            `Ask anything.`
           )}
           onValueChange={handleInputChange}
           value={userInput}
@@ -253,7 +254,12 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
           onCompositionEnd={() => setIsTyping(false)}
         />
 
-        <div className="absolute bottom-[14px] right-3 cursor-pointer hover:opacity-50">
+        <div
+          className={cn(
+            "absolute right-3 cursor-pointer hover:opacity-50",
+            isGenerating ? "bottom-[14px]" : "bottom-[7px]"
+          )}
+        >
           {isGenerating ? (
             <IconPlayerStopFilled
               className="hover:bg-background animate-pulse rounded bg-transparent p-1"
@@ -261,9 +267,9 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
               size={30}
             />
           ) : (
-            <IconSend
+            <UilEnter
               className={cn(
-                "bg-primary text-secondary rounded p-1",
+                "rounded p-1",
                 !userInput && "cursor-not-allowed opacity-50"
               )}
               onClick={() => {
@@ -271,7 +277,7 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
 
                 handleSendMessage(userInput, chatMessages, false)
               }}
-              size={30}
+              size={40}
             />
           )}
         </div>

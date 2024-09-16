@@ -1,21 +1,79 @@
 import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler"
 import { ChatbotUIContext } from "@/context/context"
-import { IconInfoCircle, IconMessagePlus } from "@tabler/icons-react"
-import { FC, useContext } from "react"
+import {
+  IconInfoCircle,
+  IconMessagePlus,
+  IconStar,
+  IconShare
+} from "@tabler/icons-react"
+import { FC, useContext, useState } from "react"
 import { WithTooltip } from "../ui/with-tooltip"
+import { updateChat } from "@/db/chats"
+import { useTheme } from "next-themes"
 
 interface ChatSecondaryButtonsProps {}
 
 export const ChatSecondaryButtons: FC<ChatSecondaryButtonsProps> = ({}) => {
-  const { selectedChat } = useContext(ChatbotUIContext)
+  const { selectedChat, setSelectedChat, chats, setChats } =
+    useContext(ChatbotUIContext)
+  const [isFavorite, setIsFavorite] = useState(
+    selectedChat?.is_favorite || false
+  )
+  const { theme } = useTheme()
 
   const { handleNewChat } = useChatHandler()
+
+  const handleToggleFavorite = async () => {
+    if (!selectedChat) return
+
+    const updatedFavoriteStatus = !isFavorite
+    setIsFavorite(updatedFavoriteStatus)
+
+    try {
+      const updatedChat = await updateChat(selectedChat.id, {
+        is_favorite: updatedFavoriteStatus
+      })
+
+      setSelectedChat(updatedChat)
+
+      //update chats in context
+      setChats(prevChats =>
+        prevChats.map(chat => (chat.id === updatedChat.id ? updatedChat : chat))
+      )
+
+      // If the chat was favorited, move it to the top of the list
+      // if (updatedFavoriteStatus) {
+      //   setChats(prevChats => {
+      //     const chatToMove = prevChats.find(chat => chat.id === updatedChat.id)
+      //     if (chatToMove) {
+      //       const newChats = prevChats.filter(chat => chat.id !== updatedChat.id)
+      //       return [chatToMove, ...newChats]
+      //     }
+      //     return prevChats
+      //   })
+      // }
+    } catch (error) {
+      console.error("Error updating favorite status:", error)
+      // Revert the UI state if the update fails
+      setIsFavorite(!updatedFavoriteStatus)
+    }
+  }
+
+  const getStarIconClasses = () => {
+    if (isFavorite) {
+      return theme === "dark"
+        ? "text-white fill-white"
+        : "text-black fill-black"
+    } else {
+      return theme === "dark" ? "text-white" : "text-black"
+    }
+  }
 
   return (
     <>
       {selectedChat && (
         <>
-          <WithTooltip
+          {/* <WithTooltip
             delayDuration={200}
             display={
               <div>
@@ -67,6 +125,41 @@ export const ChatSecondaryButtons: FC<ChatSecondaryButtonsProps> = ({}) => {
                   className="cursor-pointer hover:opacity-50"
                   size={24}
                   onClick={handleNewChat}
+                />
+              </div>
+            }
+          /> */}
+
+          <WithTooltip
+            delayDuration={200}
+            display={
+              <div>
+                {isFavorite ? "Remove from favorites" : "Add to favorites"}
+              </div>
+            }
+            trigger={
+              <div className="mt-1">
+                <IconStar
+                  className={`cursor-pointer ${getStarIconClasses()}`}
+                  // className={`cursor-pointer hover:opacity-50 ${
+                  //   isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-500"
+                  // }`}
+                  size={24}
+                  onClick={handleToggleFavorite}
+                />
+              </div>
+            }
+          />
+
+          <WithTooltip
+            delayDuration={200}
+            display={<div>Share</div>}
+            trigger={
+              <div className="mt-1">
+                <IconShare
+                  className="cursor-pointer hover:opacity-50"
+                  size={24}
+                  // onClick={handleNewChat}
                 />
               </div>
             }

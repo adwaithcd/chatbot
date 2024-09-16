@@ -23,6 +23,7 @@ import { TextareaAutosize } from "../ui/textarea-autosize"
 import { WithTooltip } from "../ui/with-tooltip"
 import { MessageActions } from "./message-actions"
 import { MessageMarkdown } from "./message-markdown"
+import { UilRobot } from "@iconscout/react-unicons"
 
 const ICON_SIZE = 32
 
@@ -183,14 +184,26 @@ export const Message: FC<MessageProps> = ({
     <div
       className={cn(
         "flex w-full justify-center",
-        message.role === "user" ? "" : "bg-secondary"
+        message.role === "user" ? "justify-end" : "bg-secondary"
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onKeyDown={handleKeyDown}
     >
-      <div className="relative flex w-full flex-col p-6 sm:w-[550px] sm:px-0 md:w-[650px] lg:w-[650px] xl:w-[700px]">
-        <div className="absolute right-5 top-7 sm:right-0">
+      <div
+        className={cn(
+          "relative flex w-full flex-col p-6",
+          message.role === "user"
+            ? "ml-[20%] items-end"
+            : "sm:w-[550px] sm:px-0 md:w-[650px] lg:w-[650px] xl:w-[700px]"
+        )}
+      >
+        <div
+          className={cn(
+            "absolute top-7",
+            message.role === "user" ? "left-0" : "right-5 sm:right-0"
+          )}
+        >
           <MessageActions
             onCopy={handleCopy}
             onEdit={handleStartEdit}
@@ -201,7 +214,12 @@ export const Message: FC<MessageProps> = ({
             onRegenerate={handleRegenerate}
           />
         </div>
-        <div className="space-y-3">
+        <div
+          className={cn(
+            "space-y-3",
+            message.role === "user" ? "text-right" : ""
+          )}
+        >
           {message.role === "system" ? (
             <div className="flex items-center space-x-4">
               <IconPencil
@@ -214,30 +232,36 @@ export const Message: FC<MessageProps> = ({
           ) : (
             <div className="flex items-center space-x-3">
               {message.role === "assistant" ? (
-                messageAssistantImage ? (
-                  <Image
-                    style={{
-                      width: `${ICON_SIZE}px`,
-                      height: `${ICON_SIZE}px`
-                    }}
-                    className="rounded"
-                    src={messageAssistantImage}
-                    alt="assistant image"
-                    height={ICON_SIZE}
-                    width={ICON_SIZE}
-                  />
-                ) : (
-                  <WithTooltip
-                    display={<div>{MODEL_DATA?.modelName}</div>}
-                    trigger={
-                      <ModelIcon
-                        provider={modelDetails?.provider || "custom"}
-                        height={ICON_SIZE}
-                        width={ICON_SIZE}
-                      />
-                    }
-                  />
-                )
+                // (
+                //   messageAssistantImage ? (
+                //     <Image
+                //       style={{
+                //         width: `${ICON_SIZE}px`,
+                //         height: `${ICON_SIZE}px`
+                //       }}
+                //       className="rounded"
+                //       src={messageAssistantImage}
+                //       alt="assistant image"
+                //       height={ICON_SIZE}
+                //       width={ICON_SIZE}
+                //     />
+                //   ) : (
+                //     <WithTooltip
+                //       display={<div>{MODEL_DATA?.modelName}</div>}
+                //       trigger={
+                //         <ModelIcon
+                //           provider={modelDetails?.provider || "custom"}
+                //           height={ICON_SIZE}
+                //           width={ICON_SIZE}
+                //         />
+                //       }
+                //     />
+                //   )
+                // )
+                <UilRobot
+                  className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
+                  size={ICON_SIZE}
+                />
               ) : profile?.image_url ? (
                 <Image
                   className={`size-[32px] rounded`}

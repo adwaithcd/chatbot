@@ -21,6 +21,12 @@ import { ModelItem } from "./items/models/model-item"
 import { PresetItem } from "./items/presets/preset-item"
 import { PromptItem } from "./items/prompts/prompt-item"
 import { ToolItem } from "./items/tools/tool-item"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "../ui/collapsible"
+import { ChevronDown, ChevronRight, Star } from "lucide-react"
 
 interface SidebarDataListProps {
   contentType: ContentType
@@ -48,6 +54,9 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
 
   const [isOverflowing, setIsOverflowing] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(true)
+  const [isRecentOpen, setIsRecentOpen] = useState(true)
 
   const getDataListComponent = (
     contentType: ContentType,
@@ -217,6 +226,87 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
   const dataWithFolders = data.filter(item => item.folder_id)
   const dataWithoutFolders = data.filter(item => item.folder_id === null)
 
+  const renderChatList = () => {
+    const chatData = data as Tables<"chats">[]
+    const favoriteChats = chatData.filter(chat => chat.is_favorite)
+
+    return (
+      <>
+        <Collapsible open={isFavoritesOpen} onOpenChange={setIsFavoritesOpen}>
+          <CollapsibleTrigger className="flex w-full items-center p-2">
+            {isFavoritesOpen ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+            <span className="ml-2 font-semibold">Starred</span>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-6">
+            {favoriteChats.length === 0 ? (
+              <div className="text-muted-foreground p-2 italic">
+                No starred chats
+              </div>
+            ) : (
+              favoriteChats.map(chat => (
+                <div
+                  key={chat.id}
+                  draggable
+                  onDragStart={e => handleDragStart(e, chat.id)}
+                >
+                  {getDataListComponent(contentType, chat)}
+                </div>
+              ))
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible open={isRecentOpen} onOpenChange={setIsRecentOpen}>
+          <CollapsibleTrigger className="flex w-full items-center p-2">
+            {isRecentOpen ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+            <span className="ml-2 font-semibold">Recent</span>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-6">
+            {chatData.map(chat => (
+              <div
+                key={chat.id}
+                draggable
+                onDragStart={e => handleDragStart(e, chat.id)}
+              >
+                {getDataListComponent(contentType, chat)}
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
+      </>
+    )
+  }
+
+  const renderOtherContentList = () => {
+    return (
+      <div
+        className={cn("flex grow flex-col", isDragOver && "bg-accent")}
+        onDrop={handleDrop}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+      >
+        {data.map((item: DataItemType) => (
+          <div
+            key={item.id}
+            draggable
+            onDragStart={e => handleDragStart(e, item.id)}
+          >
+            {getDataListComponent(contentType, item)}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <>
       <div
@@ -261,73 +351,9 @@ export const SidebarDataList: FC<SidebarDataListProps> = ({
 
             {folders.length > 0 && <Separator />}
 
-            {contentType === "chats" ? (
-              <>
-                {["Today", "Yesterday", "Previous Week", "Older"].map(
-                  dateCategory => {
-                    const sortedData = getSortedData(
-                      dataWithoutFolders,
-                      dateCategory as
-                        | "Today"
-                        | "Yesterday"
-                        | "Previous Week"
-                        | "Older"
-                    )
-
-                    return (
-                      sortedData.length > 0 && (
-                        <div key={dateCategory} className="pb-2">
-                          <div className="text-muted-foreground mb-1 text-sm font-bold">
-                            {dateCategory}
-                          </div>
-
-                          <div
-                            className={cn(
-                              "flex grow flex-col",
-                              isDragOver && "bg-accent"
-                            )}
-                            onDrop={handleDrop}
-                            onDragEnter={handleDragEnter}
-                            onDragLeave={handleDragLeave}
-                            onDragOver={handleDragOver}
-                          >
-                            {sortedData.map((item: any) => (
-                              <div
-                                key={item.id}
-                                draggable
-                                onDragStart={e => handleDragStart(e, item.id)}
-                              >
-                                {getDataListComponent(contentType, item)}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    )
-                  }
-                )}
-              </>
-            ) : (
-              <div
-                className={cn("flex grow flex-col", isDragOver && "bg-accent")}
-                onDrop={handleDrop}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-              >
-                {dataWithoutFolders.map(item => {
-                  return (
-                    <div
-                      key={item.id}
-                      draggable
-                      onDragStart={e => handleDragStart(e, item.id)}
-                    >
-                      {getDataListComponent(contentType, item)}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+            {contentType === "chats"
+              ? renderChatList()
+              : renderOtherContentList()}
           </div>
         )}
       </div>

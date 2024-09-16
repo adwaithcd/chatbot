@@ -12,6 +12,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { FC, useState } from "react"
 import { useSelectFileHandler } from "../chat/chat-hooks/use-select-file-handler"
 import { CommandK } from "../utility/command-k"
+import SmallSidebar from "../sidebar/small-sidebar"
+import { ProfileSettings } from "../utility/profile-settings"
+import { WithTooltip } from "./with-tooltip"
 
 export const SIDEBAR_WIDTH = 350
 
@@ -32,9 +35,14 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   const [contentType, setContentType] = useState<ContentType>(
     tabValue as ContentType
   )
-  const [showSidebar, setShowSidebar] = useState(
-    localStorage.getItem("showSidebar") === "true"
-  )
+  // const [showSidebar, setShowSidebar] = useState(
+  //   localStorage.getItem("showSidebar") === "true"
+  // )
+
+  const [showSidebar, setShowSidebar] = useState(true)
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
   const [isDragging, setIsDragging] = useState(false)
 
   const onFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -67,14 +75,22 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
     localStorage.setItem("showSidebar", String(!showSidebar))
   }
 
+  const handleNewChat = () => {
+    // Implement new chat functionality
+    console.log("New chat")
+  }
+
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true)
+  }
+
   return (
     <div className="flex size-full">
       <CommandK />
+      {!showSidebar && <SmallSidebar onExpand={handleToggleSidebar} />}
 
       <div
-        className={cn(
-          "duration-200 dark:border-none " + (showSidebar ? "border-r-2" : "")
-        )}
+        className={cn("duration-200 dark:border-none ")}
         style={{
           // Sidebar
           minWidth: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",
@@ -83,18 +99,11 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
         }}
       >
         {showSidebar && (
-          <Tabs
-            className="flex h-full"
-            value={contentType}
-            onValueChange={tabValue => {
-              setContentType(tabValue as ContentType)
-              router.replace(`${pathname}?tab=${tabValue}`)
-            }}
-          >
-            <SidebarSwitcher onContentTypeChange={setContentType} />
-
-            <Sidebar contentType={contentType} showSidebar={showSidebar} />
-          </Tabs>
+          <Sidebar
+            contentType={contentType}
+            showSidebar={true}
+            onToggleSideBar={handleToggleSidebar}
+          />
         )}
       </div>
 
@@ -112,7 +121,7 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
         ) : (
           children
         )}
-
+        {/* button to expand side bar
         <Button
           className={cn(
             "absolute left-[4px] top-[50%] z-10 size-[32px] cursor-pointer"
@@ -126,7 +135,7 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
           onClick={handleToggleSidebar}
         >
           <IconChevronCompactRight size={24} />
-        </Button>
+        </Button> */}
       </div>
     </div>
   )
