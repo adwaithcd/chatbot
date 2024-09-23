@@ -16,7 +16,12 @@ import { getWorkspaceById } from "@/db/workspaces"
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
 import { supabase } from "@/lib/supabase/browser-client"
 import { LLMID } from "@/types"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams
+} from "next/navigation"
 import { ReactNode, useContext, useEffect, useState } from "react"
 import Loading from "../loading"
 import ProfileSettings from "./profile/page"
@@ -29,6 +34,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const router = useRouter()
 
   const params = useParams()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const workspaceId = params.workspaceid as string
 
@@ -180,7 +186,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     return <Loading />
   }
 
-  const isProfilePage = searchParams.get("page") === "profile"
+  const isProfilePage = pathname === `/${workspaceId}/profile`
 
   return (
     <Dashboard>

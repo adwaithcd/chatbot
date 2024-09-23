@@ -12,8 +12,10 @@ import { updateProfile } from "@/db/profile"
 import { uploadProfileImage } from "@/db/storage/profile-images"
 import { useTheme } from "next-themes"
 import Image from "next/image"
-import { Edit2 } from "lucide-react"
+// @ts-ignore
+import { UilEditAlt } from "@iconscout/react-unicons"
 import { toast } from "sonner"
+import { supabase } from "@/lib/supabase/browser-client"
 
 export default function ProfileSettings() {
   const router = useRouter()
@@ -116,6 +118,12 @@ export default function ProfileSettings() {
     }
   }
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push("/login")
+    router.refresh()
+  }
+
   const getBackgroundColor = () => {
     switch (theme) {
       case "light":
@@ -143,7 +151,7 @@ export default function ProfileSettings() {
       case "light":
         return "bg-gray-200"
       case "dark":
-        return "bg-gray-700"
+        return "bg-gray-900"
       default:
         return "bg-beige-200"
     }
@@ -153,6 +161,10 @@ export default function ProfileSettings() {
     <div
       className={`flex min-h-screen items-center justify-center ${getBackgroundColor()} theme-transition`}
     >
+      <Button onClick={handleSignOut} className="absolute right-16 top-8">
+        Sign Out
+      </Button>
+
       <div className="flex w-full max-w-3xl flex-col space-y-6 p-4">
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">General</h2>
@@ -191,7 +203,7 @@ export default function ProfileSettings() {
                   onClick={() => fileInputRef.current?.click()}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  <Edit2 size={20} />
+                  <UilEditAlt size={20} />
                 </button>
                 <input
                   ref={fileInputRef}
@@ -222,11 +234,11 @@ export default function ProfileSettings() {
                   onClick={() => setIsDisplayNameEditable(true)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  <Edit2 size={20} />
+                  <UilEditAlt size={20} />
                 </button>
               </div>
             </div>
-            <div className={`my-2 h-px ${getSeparatorColor()}`} />
+            {/* <div className={`my-2 h-px ${getSeparatorColor()}`} />
             <div className="flex items-center justify-between py-2">
               <Label className="p-2">Username</Label>
               <div
@@ -234,16 +246,16 @@ export default function ProfileSettings() {
               >
                 {username || ""}
               </div>
-            </div>
-            <div className={`my-2 h-px ${getSeparatorColor()}`} />
-            <div className="flex items-center justify-between py-2">
+            </div> */}
+            {/* <div className={`my-2 h-px ${getSeparatorColor()}`} /> */}
+            {/* <div className="flex items-center justify-between py-2">
               <Label className="p-2">Email</Label>
               <div
                 className={`w-64 p-2 text-right ${getInputBackgroundColor()} rounded`}
               >
                 {"test@email.com" || ""}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

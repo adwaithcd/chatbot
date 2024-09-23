@@ -11,6 +11,7 @@ import { SidebarContent } from "./sidebar-content"
 import { WithTooltip } from "../ui/with-tooltip"
 import { ProfileSettings } from "../utility/profile-settings"
 import { Settings } from "lucide-react"
+// @ts-ignore
 import { UilRobot } from "@iconscout/react-unicons"
 import { NewProfileSettings } from "../utility/new-profile-settings" // Import the new component
 
@@ -130,10 +131,11 @@ export const Sidebar: FC<SidebarProps> = ({
 
         <div className="bg-background sticky bottom-0 flex items-center justify-between p-3">
           <div className="flex items-center space-x-2">
-            <WithTooltip
+            {/* <WithTooltip
               display={<div>Profile Settings</div>}
               trigger={<NewProfileSettings />}
-            />
+            /> */}
+            <NewProfileSettings />
             <span className="text-sm font-medium">
               {profile?.display_name || "User"}
             </span>

@@ -15,7 +15,7 @@ export const NewProfileSettings: FC = () => {
 
   const handleOpenProfileSettings = () => {
     // console.log("Opening profile settings for workspace:", workspaceId)
-    router.push(`/${workspaceId}?page=profile`)
+    router.push(`/${workspaceId}/profile`)
   }
 
   return (

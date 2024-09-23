@@ -20,6 +20,7 @@ import { useChatHandler } from "./chat-hooks/use-chat-handler"
 import { useChatHistoryHandler } from "./chat-hooks/use-chat-history"
 import { usePromptAndCommand } from "./chat-hooks/use-prompt-and-command"
 import { useSelectFileHandler } from "./chat-hooks/use-select-file-handler"
+// @ts-ignore
 import { UilEnter } from "@iconscout/react-unicons"
 
 interface ChatInputProps {}

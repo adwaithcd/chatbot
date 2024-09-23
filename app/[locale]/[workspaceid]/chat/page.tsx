@@ -43,7 +43,7 @@ export default function ChatPage() {
                 {recommendedPrompts.map((prompt, index) => (
                   <div
                     key={index}
-                    className="flex min-h-[120px] cursor-pointer items-center justify-center rounded-lg bg-gray-100 p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                    className="bg-secondary flex min-h-[120px] cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                     onClick={() => handleFocusChatInput()}
                   >
                     <p>{prompt}</p>
