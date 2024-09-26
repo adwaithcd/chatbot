@@ -14,6 +14,7 @@ import { Settings } from "lucide-react"
 // @ts-ignore
 import { UilRobot } from "@iconscout/react-unicons"
 import { NewProfileSettings } from "../utility/new-profile-settings" // Import the new component
+import { useRouter, useParams } from "next/navigation"
 
 interface SidebarProps {
   contentType: ContentType
@@ -51,6 +52,14 @@ export const Sidebar: FC<SidebarProps> = ({
   )
   const toolFolders = folders.filter(folder => folder.type === "tools")
   const modelFolders = folders.filter(folder => folder.type === "models")
+
+  const router = useRouter()
+  const params = useParams()
+  const workspaceId = params.workspaceid as string
+  const handleOpenProfileSettings = () => {
+    // console.log("Opening profile settings for workspace:", workspaceId)
+    router.push(`/${workspaceId}/profile`)
+  }
 
   const renderSidebarContent = (
     contentType: ContentType,
@@ -140,14 +149,9 @@ export const Sidebar: FC<SidebarProps> = ({
               {profile?.display_name || "User"}
             </span>
           </div>
-          <WithTooltip
-            display={<div>Settings</div>}
-            trigger={
-              <button className="rounded-full p-1 hover:opacity-50">
-                <Settings size={20} />
-              </button>
-            }
-          />
+          <button className="rounded-full p-1 hover:opacity-50">
+            <Settings size={20} onClick={handleOpenProfileSettings} />
+          </button>
         </div>
       </div>
     </div>

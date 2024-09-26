@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS messages (
 
     -- CONSTRAINTS
     CONSTRAINT check_image_paths_length CHECK (array_length(image_paths, 1) <= 16)
+
+    -- For Feedback
+    is_liked BOOLEAN DEFAULT FALSE,
+    is_disliked BOOLEAN DEFAULT FALSE,
+    feedback_message TEXT CHECK (char_length(feedback_message) <= 2000)
 );
 
 -- INDEXES --

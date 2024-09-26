@@ -100,7 +100,10 @@ export const createTempMessages = (
       role: "user",
       sequence_number: chatMessages.length,
       updated_at: "",
-      user_id: ""
+      user_id: "",
+      is_disliked: false,
+      is_liked: false,
+      feedback_message: ""
     },
     fileItems: []
   }
@@ -117,7 +120,10 @@ export const createTempMessages = (
       role: "assistant",
       sequence_number: chatMessages.length + 1,
       updated_at: "",
-      user_id: ""
+      user_id: "",
+      is_disliked: false,
+      is_liked: false,
+      feedback_message: ""
     },
     fileItems: []
   }

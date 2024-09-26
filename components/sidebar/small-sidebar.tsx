@@ -13,6 +13,8 @@ import { SIDEBAR_ICON_SIZE } from "../sidebar/sidebar-switcher"
 import { WithTooltip } from "../ui/with-tooltip"
 import { ProfileSettings } from "../utility/profile-settings"
 import { useChatHandler } from "../chat/chat-hooks/use-chat-handler"
+import { useParams, useRouter } from "next/navigation"
+import { NewProfileSettings } from "../utility/new-profile-settings"
 
 interface SmallSidebarProps {
   onExpand: () => void
@@ -26,9 +28,11 @@ const SmallSidebar: React.FC<SmallSidebarProps> = ({ onExpand }) => {
       handleNewChat()
     }
   }
+  const router = useRouter()
+  const params = useParams()
+  const workspaceId = params.workspaceid as string
   const handleOpenSettings = () => {
-    // Implement settings opening logic here
-    console.log("Opening settings")
+    router.push(`/${workspaceId}/profile`)
   }
 
   return (
@@ -53,10 +57,11 @@ const SmallSidebar: React.FC<SmallSidebarProps> = ({ onExpand }) => {
         </Button>
       </div>
       <div className="flex flex-col items-center space-y-6 pb-6">
-        <WithTooltip
+        {/* <WithTooltip
           display={<div>Profile Settings</div>}
           trigger={<ProfileSettings />}
-        />
+        /> */}
+        <NewProfileSettings />
         <Button
           variant="ghost"
           size="icon"

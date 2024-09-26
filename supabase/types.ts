@@ -825,8 +825,11 @@ export type Database = {
           chat_id: string
           content: string
           created_at: string
+          feedback_message: string | null
           id: string
           image_paths: string[]
+          is_disliked: boolean | null
+          is_liked: boolean | null
           model: string
           role: string
           sequence_number: number
@@ -838,8 +841,11 @@ export type Database = {
           chat_id: string
           content: string
           created_at?: string
+          feedback_message?: string | null
           id?: string
           image_paths: string[]
+          is_disliked?: boolean | null
+          is_liked?: boolean | null
           model: string
           role: string
           sequence_number: number
@@ -851,8 +857,11 @@ export type Database = {
           chat_id?: string
           content?: string
           created_at?: string
+          feedback_message?: string | null
           id?: string
           image_paths?: string[]
+          is_disliked?: boolean | null
+          is_liked?: boolean | null
           model?: string
           role?: string
           sequence_number?: number

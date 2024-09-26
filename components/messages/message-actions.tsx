@@ -1,5 +1,12 @@
 import { ChatbotUIContext } from "@/context/context"
-import { IconCheck, IconCopy, IconEdit, IconRepeat } from "@tabler/icons-react"
+import {
+  IconCheck,
+  IconCopy,
+  IconEdit,
+  IconRepeat,
+  IconThumbDown,
+  IconThumbUp
+} from "@tabler/icons-react"
 import { FC, useContext, useEffect, useState } from "react"
 import { WithTooltip } from "../ui/with-tooltip"
 
@@ -109,6 +116,46 @@ export const MessageActions: FC<MessageActionsProps> = ({
             />
           }
         />
+      )}
+
+      {isAssistant && isHovering && (
+        <div className="relative flex items-center">
+          <button
+            className="cursor-pointer p-1 hover:opacity-50"
+            onClick={e => {
+              e.preventDefault()
+              console.log("liked")
+            }}
+            title="Like"
+          >
+            <IconThumbUp size={MESSAGE_ICON_SIZE} />
+          </button>
+          <button
+            className="cursor-pointer p-1 hover:opacity-50"
+            onClick={e => {
+              e.preventDefault()
+              console.log("disliked")
+            }}
+            title="Dislike"
+          >
+            <IconThumbDown size={MESSAGE_ICON_SIZE} />
+          </button>
+
+          {/* {activeFeedback && (
+            <div className="absolute left-0 top-full mt-2">
+              <FeedbackInlinePanel
+                type={activeFeedback}
+                onSubmit={handleFeedback}
+                onClose={() => setActiveFeedback(null)}
+                initialComment={
+                  feedbackState.type === activeFeedback
+                    ? feedbackState.comment
+                    : ""
+                }
+              />
+            </div>
+          )} */}
+        </div>
       )}
 
       {/* {1 > 0 && isAssistant && <MessageReplies />} */}
