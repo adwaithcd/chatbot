@@ -828,8 +828,8 @@ export type Database = {
           feedback_message: string | null
           id: string
           image_paths: string[]
-          is_disliked: boolean | null
-          is_liked: boolean | null
+          is_disliked: boolean
+          is_liked: boolean
           model: string
           role: string
           sequence_number: number
@@ -844,8 +844,8 @@ export type Database = {
           feedback_message?: string | null
           id?: string
           image_paths: string[]
-          is_disliked?: boolean | null
-          is_liked?: boolean | null
+          is_disliked?: boolean
+          is_liked?: boolean
           model: string
           role: string
           sequence_number: number
@@ -860,8 +860,8 @@ export type Database = {
           feedback_message?: string | null
           id?: string
           image_paths?: string[]
-          is_disliked?: boolean | null
-          is_liked?: boolean | null
+          is_disliked?: boolean
+          is_liked?: boolean
           model?: string
           role?: string
           sequence_number?: number

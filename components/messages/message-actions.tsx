@@ -5,7 +5,9 @@ import {
   IconEdit,
   IconRepeat,
   IconThumbDown,
-  IconThumbUp
+  IconThumbDownFilled,
+  IconThumbUp,
+  IconThumbUpFilled
 } from "@tabler/icons-react"
 import { FC, useContext, useEffect, useState } from "react"
 import { WithTooltip } from "../ui/with-tooltip"
@@ -17,9 +19,14 @@ interface MessageActionsProps {
   isLast: boolean
   isEditing: boolean
   isHovering: boolean
+  messageId: string
+  isLiked: boolean
+  isDisliked: boolean
   onCopy: () => void
   onEdit: () => void
   onRegenerate: () => void
+  onLike: () => void
+  onDislike: () => void
 }
 
 export const MessageActions: FC<MessageActionsProps> = ({
@@ -27,9 +34,14 @@ export const MessageActions: FC<MessageActionsProps> = ({
   isLast,
   isEditing,
   isHovering,
+  messageId,
+  isLiked,
+  isDisliked,
   onCopy,
   onEdit,
-  onRegenerate
+  onRegenerate,
+  onLike,
+  onDislike
 }) => {
   const { isGenerating } = useContext(ChatbotUIContext)
 
@@ -118,27 +130,29 @@ export const MessageActions: FC<MessageActionsProps> = ({
         />
       )}
 
-      {isAssistant && isHovering && (
+      {isAssistant && (
         <div className="relative flex items-center">
           <button
             className="cursor-pointer p-1 hover:opacity-50"
-            onClick={e => {
-              e.preventDefault()
-              console.log("liked")
-            }}
+            onClick={onLike}
             title="Like"
           >
-            <IconThumbUp size={MESSAGE_ICON_SIZE} />
+            {isLiked ? (
+              <IconThumbUpFilled size={MESSAGE_ICON_SIZE} />
+            ) : (
+              <IconThumbUp size={MESSAGE_ICON_SIZE} />
+            )}
           </button>
           <button
             className="cursor-pointer p-1 hover:opacity-50"
-            onClick={e => {
-              e.preventDefault()
-              console.log("disliked")
-            }}
+            onClick={onDislike}
             title="Dislike"
           >
-            <IconThumbDown size={MESSAGE_ICON_SIZE} />
+            {isDisliked ? (
+              <IconThumbDownFilled size={MESSAGE_ICON_SIZE} />
+            ) : (
+              <IconThumbDown size={MESSAGE_ICON_SIZE} />
+            )}
           </button>
 
           {/* {activeFeedback && (

@@ -6,6 +6,7 @@ import {
   IconUser,
   IconSettings
 } from "@tabler/icons-react"
+//@ts-ignore
 import { UilRobot, UilEdit, UilArrowFromRight } from "@iconscout/react-unicons"
 import { ChatbotUIContext } from "@/context/context"
 import Image from "next/image"

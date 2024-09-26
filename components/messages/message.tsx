@@ -26,6 +26,7 @@ import { MessageMarkdown } from "./message-markdown"
 // @ts-ignore
 import { UilRobot } from "@iconscout/react-unicons"
 import { useTheme } from "next-themes"
+import { updateMessage } from "@/db/messages"
 
 const ICON_SIZE = 32
 
@@ -62,7 +63,8 @@ export const Message: FC<MessageProps> = ({
     assistantImages,
     toolInUse,
     files,
-    models
+    models,
+    setChatMessages
   } = useContext(ChatbotUIContext)
 
   const { theme } = useTheme()
@@ -73,6 +75,9 @@ export const Message: FC<MessageProps> = ({
 
   const [isHovering, setIsHovering] = useState(false)
   const [editedMessage, setEditedMessage] = useState(message.content)
+
+  const [isLiked, setIsLiked] = useState(message.is_liked)
+  const [isDisliked, setIsDisliked] = useState(message.is_disliked)
 
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [selectedImage, setSelectedImage] = useState<MessageImage | null>(null)
@@ -184,6 +189,37 @@ export const Message: FC<MessageProps> = ({
     return acc
   }, fileAccumulator)
 
+  const handleToggleLikeDislike = async (action: "like" | "dislike") => {
+    if (!message) return
+
+    const updatedLikeStatus = action === "like" ? !isLiked : false
+    const updatedDislikeStatus = action === "dislike" ? !isDisliked : false
+
+    setIsLiked(updatedLikeStatus)
+    setIsDisliked(updatedDislikeStatus)
+
+    try {
+      const updatedMessage = await updateMessage(message.id, {
+        is_liked: updatedLikeStatus,
+        is_disliked: updatedDislikeStatus
+      })
+
+      // Update the message in the chat messages
+      setChatMessages(prevMessages =>
+        prevMessages.map(chatMessage =>
+          chatMessage.message.id === updatedMessage.id
+            ? { ...chatMessage, message: updatedMessage }
+            : chatMessage
+        )
+      )
+    } catch (error) {
+      console.error("Error updating like/dislike status:", error)
+      // Revert the UI state if the update fails
+      setIsLiked(message.is_liked)
+      setIsDisliked(message.is_disliked)
+    }
+  }
+
   const isUser = message.role === "user"
 
   const getBackgroundColor = () => {
@@ -222,6 +258,11 @@ export const Message: FC<MessageProps> = ({
                 isEditing={isEditing}
                 isHovering={isHovering}
                 onRegenerate={handleRegenerate}
+                messageId={message.id}
+                isLiked={message.is_liked}
+                isDisliked={message.is_disliked}
+                onLike={() => handleToggleLikeDislike("like")}
+                onDislike={() => handleToggleLikeDislike("dislike")}
               />
             )}
           </div>
@@ -430,6 +471,11 @@ export const Message: FC<MessageProps> = ({
               isEditing={isEditing}
               isHovering={isHovering}
               onRegenerate={handleRegenerate}
+              messageId={message.id}
+              isLiked={message.is_liked}
+              isDisliked={message.is_disliked}
+              onLike={() => handleToggleLikeDislike("like")}
+              onDislike={() => handleToggleLikeDislike("dislike")}
             />
           )}
         </div>

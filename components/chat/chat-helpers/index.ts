@@ -418,7 +418,10 @@ export const handleCreateMessages = async (
     model: modelData.modelId,
     role: "user",
     sequence_number: chatMessages.length,
-    image_paths: []
+    image_paths: [],
+    is_liked: false,
+    is_disliked: false,
+    feedback_message: ""
   }
 
   const finalAssistantMessage: TablesInsert<"messages"> = {
@@ -429,7 +432,10 @@ export const handleCreateMessages = async (
     model: modelData.modelId,
     role: "assistant",
     sequence_number: chatMessages.length + 1,
-    image_paths: []
+    image_paths: [],
+    is_liked: false,
+    is_disliked: false,
+    feedback_message: ""
   }
 
   let finalChatMessages: ChatMessage[] = []
