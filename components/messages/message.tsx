@@ -11,7 +11,8 @@ import {
   IconCircleFilled,
   IconFileText,
   IconMoodSmile,
-  IconPencil
+  IconPencil,
+  IconX
 } from "@tabler/icons-react"
 import Image from "next/image"
 import { FC, useContext, useEffect, useRef, useState } from "react"
@@ -24,9 +25,14 @@ import { WithTooltip } from "../ui/with-tooltip"
 import { MessageActions } from "./message-actions"
 import { MessageMarkdown } from "./message-markdown"
 // @ts-ignore
-import { UilRobot } from "@iconscout/react-unicons"
+import { UilRobot, UilEnter } from "@iconscout/react-unicons"
 import { useTheme } from "next-themes"
 import { updateMessage } from "@/db/messages"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover"
 
 const ICON_SIZE = 32
 
@@ -78,6 +84,10 @@ export const Message: FC<MessageProps> = ({
 
   const [isLiked, setIsLiked] = useState(message.is_liked)
   const [isDisliked, setIsDisliked] = useState(message.is_disliked)
+  const [showFeedbackPanel, setShowFeedbackPanel] = useState(false)
+  const [feedbackComment, setFeedbackComment] = useState(
+    message.feedback_message || ""
+  )
 
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [selectedImage, setSelectedImage] = useState<MessageImage | null>(null)
@@ -192,11 +202,22 @@ export const Message: FC<MessageProps> = ({
   const handleToggleLikeDislike = async (action: "like" | "dislike") => {
     if (!message) return
 
-    const updatedLikeStatus = action === "like" ? !isLiked : false
-    const updatedDislikeStatus = action === "dislike" ? !isDisliked : false
+    // Check if the clicked action is already active
+    if (
+      (action === "like" && isLiked) ||
+      (action === "dislike" && isDisliked)
+    ) {
+      // If already active, just toggle the feedback panel
+      setShowFeedbackPanel(!showFeedbackPanel)
+      return
+    }
+
+    const updatedLikeStatus = action === "like"
+    const updatedDislikeStatus = action === "dislike"
 
     setIsLiked(updatedLikeStatus)
     setIsDisliked(updatedDislikeStatus)
+    setShowFeedbackPanel(true)
 
     try {
       const updatedMessage = await updateMessage(message.id, {
@@ -217,7 +238,34 @@ export const Message: FC<MessageProps> = ({
       // Revert the UI state if the update fails
       setIsLiked(message.is_liked)
       setIsDisliked(message.is_disliked)
+      setShowFeedbackPanel(false)
     }
+  }
+
+  const handleSubmitFeedback = async () => {
+    try {
+      const updatedMessage = await updateMessage(message.id, {
+        feedback_message: feedbackComment
+      })
+
+      // Update the message in the chat messages
+      setChatMessages(prevMessages =>
+        prevMessages.map(chatMessage =>
+          chatMessage.message.id === updatedMessage.id
+            ? { ...chatMessage, message: updatedMessage }
+            : chatMessage
+        )
+      )
+
+      setShowFeedbackPanel(false)
+    } catch (error) {
+      console.error("Error updating feedback message:", error)
+    }
+  }
+
+  const handleCloseFeedbackPanel = () => {
+    setShowFeedbackPanel(false)
+    setFeedbackComment(message.feedback_message || "")
   }
 
   const isUser = message.role === "user"
@@ -463,20 +511,60 @@ export const Message: FC<MessageProps> = ({
           )}
 
           {!isUser && (
-            <MessageActions
-              onCopy={handleCopy}
-              onEdit={handleStartEdit}
-              isAssistant={true}
-              isLast={isLast}
-              isEditing={isEditing}
-              isHovering={isHovering}
-              onRegenerate={handleRegenerate}
-              messageId={message.id}
-              isLiked={message.is_liked}
-              isDisliked={message.is_disliked}
-              onLike={() => handleToggleLikeDislike("like")}
-              onDislike={() => handleToggleLikeDislike("dislike")}
-            />
+            <div className="relative">
+              <Popover
+                open={showFeedbackPanel}
+                onOpenChange={setShowFeedbackPanel}
+              >
+                <PopoverTrigger asChild>
+                  <div>
+                    <MessageActions
+                      onCopy={handleCopy}
+                      onEdit={handleStartEdit}
+                      isAssistant={true}
+                      isLast={isLast}
+                      isEditing={isEditing}
+                      isHovering={isHovering}
+                      onRegenerate={handleRegenerate}
+                      messageId={message.id}
+                      isLiked={isLiked}
+                      isDisliked={isDisliked}
+                      onLike={() => handleToggleLikeDislike("like")}
+                      onDislike={() => handleToggleLikeDislike("dislike")}
+                    />
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent
+                  sideOffset={-440}
+                  side="left"
+                  align="end"
+                  className="w-80 overflow-hidden rounded-2xl p-0"
+                >
+                  <div className="relative">
+                    <TextareaAutosize
+                      placeholder="Please explain your response and provide suggestions if any"
+                      value={feedbackComment}
+                      onValueChange={setFeedbackComment}
+                      minRows={3}
+                      maxRows={6}
+                      className="w-full resize-none rounded-2xl p-4 pr-20 text-sm focus:outline-none"
+                    />
+                    <button
+                      onClick={() => setShowFeedbackPanel(false)}
+                      className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <IconX size={18} />
+                    </button>
+                    <button
+                      onClick={handleSubmitFeedback}
+                      className="absolute bottom-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <UilEnter size={18} />
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           )}
         </div>
       </div>
