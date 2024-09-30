@@ -96,7 +96,7 @@ export const MessageActions: FC<MessageActionsProps> = ({
         />
       )}
 
-      {(isHovering || isLast) && (
+      {
         <WithTooltip
           delayDuration={1000}
           side="bottom"
@@ -113,7 +113,7 @@ export const MessageActions: FC<MessageActionsProps> = ({
             )
           }
         />
-      )}
+      }
 
       {isLast && (
         <WithTooltip
@@ -154,21 +154,6 @@ export const MessageActions: FC<MessageActionsProps> = ({
               <IconThumbDown size={MESSAGE_ICON_SIZE} />
             )}
           </button>
-
-          {/* {activeFeedback && (
-            <div className="absolute left-0 top-full mt-2">
-              <FeedbackInlinePanel
-                type={activeFeedback}
-                onSubmit={handleFeedback}
-                onClose={() => setActiveFeedback(null)}
-                initialComment={
-                  feedbackState.type === activeFeedback
-                    ? feedbackState.comment
-                    : ""
-                }
-              />
-            </div>
-          )} */}
         </div>
       )}
 
