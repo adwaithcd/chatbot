@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { FC } from "react"
 import { ChatbotUISVG } from "../icons/chatbotui-svg"
+// @ts-ignore
 import { UilRobot } from "@iconscout/react-unicons"
 
 interface BrandProps {

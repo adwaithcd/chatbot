@@ -12,6 +12,9 @@ import { AssistantImage } from "@/types/images/assistant-image"
 import { VALID_ENV_KEYS } from "@/types/valid-keys"
 import { Dispatch, SetStateAction, createContext } from "react"
 
+type TestScore = Tables<"test_scores">
+type CollegeApplication = Tables<"college_applications">
+
 interface ChatbotUIContext {
   // PROFILE STORE
   profile: Tables<"profiles"> | null
@@ -136,6 +139,16 @@ interface ChatbotUIContext {
   setSelectedTools: Dispatch<SetStateAction<Tables<"tools">[]>>
   toolInUse: string
   setToolInUse: Dispatch<SetStateAction<string>>
+
+  // SURVEY STORE
+  surveyResponse: Tables<"survey_responses"> | null
+  setSurveyResponse: Dispatch<SetStateAction<Tables<"survey_responses"> | null>>
+  testScores: TestScore[]
+  setTestScores: Dispatch<SetStateAction<TestScore[]>>
+  collegeApplications: CollegeApplication[]
+  setCollegeApplications: Dispatch<SetStateAction<CollegeApplication[]>>
+  currentSurveyStep: number
+  setCurrentSurveyStep: Dispatch<SetStateAction<number>>
 }
 
 export const ChatbotUIContext = createContext<ChatbotUIContext>({
@@ -261,5 +274,16 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
   selectedTools: [],
   setSelectedTools: () => {},
   toolInUse: "none",
-  setToolInUse: () => {}
+  setToolInUse: () => {},
+
+  // SURVEY STORE
+
+  surveyResponse: null,
+  setSurveyResponse: () => {},
+  testScores: [],
+  setTestScores: () => {},
+  collegeApplications: [],
+  setCollegeApplications: () => {},
+  currentSurveyStep: 1,
+  setCurrentSurveyStep: () => {}
 })

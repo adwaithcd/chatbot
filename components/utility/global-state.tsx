@@ -28,6 +28,9 @@ import { VALID_ENV_KEYS } from "@/types/valid-keys"
 import { useRouter } from "next/navigation"
 import { FC, useEffect, useState } from "react"
 
+type TestScore = Tables<"test_scores">
+type CollegeApplication = Tables<"college_applications">
+
 interface GlobalStateProps {
   children: React.ReactNode
 }
@@ -122,6 +125,15 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
   // TOOL STORE
   const [selectedTools, setSelectedTools] = useState<Tables<"tools">[]>([])
   const [toolInUse, setToolInUse] = useState<string>("none")
+
+  // SURVEY STORE
+  const [surveyResponse, setSurveyResponse] =
+    useState<Tables<"survey_responses"> | null>(null)
+  const [testScores, setTestScores] = useState<TestScore[]>([])
+  const [collegeApplications, setCollegeApplications] = useState<
+    CollegeApplication[]
+  >([])
+  const [currentSurveyStep, setCurrentSurveyStep] = useState(1)
 
   useEffect(() => {
     ;(async () => {
@@ -322,7 +334,17 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
         selectedTools,
         setSelectedTools,
         toolInUse,
-        setToolInUse
+        setToolInUse,
+
+        // SURVEY STORE
+        surveyResponse,
+        setSurveyResponse,
+        testScores,
+        setTestScores,
+        collegeApplications,
+        setCollegeApplications,
+        currentSurveyStep,
+        setCurrentSurveyStep
       }}
     >
       {children}

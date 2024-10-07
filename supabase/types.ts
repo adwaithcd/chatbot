@@ -565,6 +565,44 @@ export type Database = {
           },
         ]
       }
+      college_applications: {
+        Row: {
+          application_id: string
+          college_name: string
+          created_at: string
+          major: string | null
+          offer_status: string | null
+          survey_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          application_id?: string
+          college_name: string
+          created_at?: string
+          major?: string | null
+          offer_status?: string | null
+          survey_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string
+          college_name?: string
+          created_at?: string
+          major?: string | null
+          offer_status?: string | null
+          survey_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_applications_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
+            referencedColumns: ["survey_id"]
+          },
+        ]
+      }
       file_items: {
         Row: {
           content: string
@@ -828,8 +866,8 @@ export type Database = {
           feedback_message: string | null
           id: string
           image_paths: string[]
-          is_disliked: boolean
-          is_liked: boolean
+          is_disliked: boolean | null
+          is_liked: boolean | null
           model: string
           role: string
           sequence_number: number
@@ -844,8 +882,8 @@ export type Database = {
           feedback_message?: string | null
           id?: string
           image_paths: string[]
-          is_disliked?: boolean
-          is_liked?: boolean
+          is_disliked?: boolean | null
+          is_liked?: boolean | null
           model: string
           role: string
           sequence_number: number
@@ -860,8 +898,8 @@ export type Database = {
           feedback_message?: string | null
           id?: string
           image_paths?: string[]
-          is_disliked?: boolean
-          is_liked?: boolean
+          is_disliked?: boolean | null
+          is_liked?: boolean | null
           model?: string
           role?: string
           sequence_number?: number
@@ -1299,6 +1337,97 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_responses: {
+        Row: {
+          application_year: number | null
+          city: string | null
+          country: string | null
+          created_at: string
+          high_school_gpa: number | null
+          high_school_name: string | null
+          max_gpa: number | null
+          state: string | null
+          step_completed: number
+          survey_id: string
+          updated_at: string | null
+          user_id: string
+          zipcode: string | null
+        }
+        Insert: {
+          application_year?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          high_school_gpa?: number | null
+          high_school_name?: string | null
+          max_gpa?: number | null
+          state?: string | null
+          step_completed?: number
+          survey_id?: string
+          updated_at?: string | null
+          user_id: string
+          zipcode?: string | null
+        }
+        Update: {
+          application_year?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          high_school_gpa?: number | null
+          high_school_name?: string | null
+          max_gpa?: number | null
+          state?: string | null
+          step_completed?: number
+          survey_id?: string
+          updated_at?: string | null
+          user_id?: string
+          zipcode?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_scores: {
+        Row: {
+          created_at: string
+          score_id: string
+          survey_id: string
+          test_name: string
+          test_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          score_id?: string
+          survey_id: string
+          test_name: string
+          test_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          score_id?: string
+          survey_id?: string
+          test_name?: string
+          test_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_scores_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
+            referencedColumns: ["survey_id"]
           },
         ]
       }
