@@ -11,6 +11,8 @@ import {
 } from "@tabler/icons-react"
 import { FC, useContext, useEffect, useState } from "react"
 import { WithTooltip } from "../ui/with-tooltip"
+//@ts-ignore
+import { UilCommentDots } from "@iconscout/react-unicons"
 
 export const MESSAGE_ICON_SIZE = 18
 
@@ -27,6 +29,8 @@ interface MessageActionsProps {
   onRegenerate: () => void
   onLike: () => void
   onDislike: () => void
+  onComment: () => void
+  feedbackComment: String
 }
 
 export const MessageActions: FC<MessageActionsProps> = ({
@@ -41,7 +45,9 @@ export const MessageActions: FC<MessageActionsProps> = ({
   onEdit,
   onRegenerate,
   onLike,
-  onDislike
+  onDislike,
+  onComment,
+  feedbackComment
 }) => {
   const { isGenerating } = useContext(ChatbotUIContext)
 
@@ -154,6 +160,15 @@ export const MessageActions: FC<MessageActionsProps> = ({
               <IconThumbDown size={MESSAGE_ICON_SIZE} />
             )}
           </button>
+          {feedbackComment && (
+            <button
+              className="cursor-pointer p-1 hover:opacity-50"
+              title="Feedback"
+              onClick={onComment}
+            >
+              <UilCommentDots size={MESSAGE_ICON_SIZE} />
+            </button>
+          )}
         </div>
       )}
 

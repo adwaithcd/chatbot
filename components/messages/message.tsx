@@ -82,12 +82,20 @@ export const Message: FC<MessageProps> = ({
   const [isHovering, setIsHovering] = useState(false)
   const [editedMessage, setEditedMessage] = useState(message.content)
 
-  const [isLiked, setIsLiked] = useState(message.is_liked)
-  const [isDisliked, setIsDisliked] = useState(message.is_disliked)
+  const [isLiked, setIsLiked] = useState(message.is_liked ?? false)
+  const [isDisliked, setIsDisliked] = useState(message.is_disliked ?? false)
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false)
   const [feedbackComment, setFeedbackComment] = useState(
     message.feedback_message || ""
   )
+  const feedbackPanelRef = useRef<HTMLDivElement>(null)
+  // for cancel feedback confirmation
+  const [showCancelFeedbackConfirmation, setShowCancelFeedbackConfirmation] =
+    useState(false)
+
+  // for change feedback
+  const [showChangeFeedbackPanel, setShowChangeFeedbackPanel] = useState(false)
+  const [newFeedbackComment, setNewFeedbackComment] = useState("")
 
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [selectedImage, setSelectedImage] = useState<MessageImage | null>(null)
@@ -207,8 +215,18 @@ export const Message: FC<MessageProps> = ({
       (action === "like" && isLiked) ||
       (action === "dislike" && isDisliked)
     ) {
-      // If already active, just toggle the feedback panel
-      setShowFeedbackPanel(!showFeedbackPanel)
+      // If already liked or disliked show confirmation to reset
+      setShowCancelFeedbackConfirmation(true)
+      return
+    }
+
+    // Check if user is changing feedback
+    const isChangingFeedback =
+      (action === "like" && isDisliked) || (action === "dislike" && isLiked)
+
+    if (isChangingFeedback) {
+      setShowChangeFeedbackPanel(true)
+      setNewFeedbackComment("")
       return
     }
 
@@ -236,8 +254,8 @@ export const Message: FC<MessageProps> = ({
     } catch (error) {
       console.error("Error updating like/dislike status:", error)
       // Revert the UI state if the update fails
-      setIsLiked(message.is_liked)
-      setIsDisliked(message.is_disliked)
+      setIsLiked(message.is_liked ?? false)
+      setIsDisliked(message.is_disliked ?? false)
       setShowFeedbackPanel(false)
     }
   }
@@ -263,9 +281,64 @@ export const Message: FC<MessageProps> = ({
     }
   }
 
-  const handleCloseFeedbackPanel = () => {
-    setShowFeedbackPanel(false)
-    setFeedbackComment(message.feedback_message || "")
+  const handleCancelFeedback = async () => {
+    // If the message is liked and user clicks on like again
+    try {
+      const updatedMessage = await updateMessage(message.id, {
+        is_liked: false,
+        is_disliked: false,
+        feedback_message: ""
+      })
+
+      setIsLiked(false)
+      setIsDisliked(false)
+      setFeedbackComment("")
+      setShowCancelFeedbackConfirmation(false)
+
+      setChatMessages(prevMessages =>
+        prevMessages.map(chatMessage =>
+          chatMessage.message.id === updatedMessage.id
+            ? { ...chatMessage, message: updatedMessage }
+            : chatMessage
+        )
+      )
+    } catch (error) {
+      console.error("Error updating feedback message:", error)
+    }
+  }
+
+  const handleShowComment = () => {
+    setShowCancelFeedbackConfirmation(false)
+    setShowFeedbackPanel(true)
+  }
+
+  const handleSubmitChangedFeedback = async () => {
+    // when user changes like to dislike or vice versa
+    try {
+      const updatedLikeStatus = !isLiked
+      const updatedDislikeStatus = !isDisliked
+
+      const updatedMessage = await updateMessage(message.id, {
+        is_liked: updatedLikeStatus,
+        is_disliked: updatedDislikeStatus,
+        feedback_message: newFeedbackComment
+      })
+
+      setIsLiked(updatedLikeStatus)
+      setIsDisliked(updatedDislikeStatus)
+      setFeedbackComment(newFeedbackComment)
+      setShowChangeFeedbackPanel(false)
+
+      setChatMessages(prevMessages =>
+        prevMessages.map(chatMessage =>
+          chatMessage.message.id === updatedMessage.id
+            ? { ...chatMessage, message: updatedMessage }
+            : chatMessage
+        )
+      )
+    } catch (error) {
+      console.error("Error updating feedback:", error)
+    }
   }
 
   const isUser = message.role === "user"
@@ -307,10 +380,12 @@ export const Message: FC<MessageProps> = ({
                 isHovering={isHovering}
                 onRegenerate={handleRegenerate}
                 messageId={message.id}
-                isLiked={message.is_liked}
-                isDisliked={message.is_disliked}
+                isLiked={isLiked}
+                isDisliked={isDisliked}
                 onLike={() => handleToggleLikeDislike("like")}
                 onDislike={() => handleToggleLikeDislike("dislike")}
+                onComment={handleShowComment}
+                feedbackComment={feedbackComment}
               />
             )}
           </div>
@@ -511,59 +586,116 @@ export const Message: FC<MessageProps> = ({
           )}
 
           {!isUser && (
-            <div className="relative">
-              <Popover
-                open={showFeedbackPanel}
-                onOpenChange={setShowFeedbackPanel}
-              >
-                <PopoverTrigger asChild>
-                  <div>
-                    <MessageActions
-                      onCopy={handleCopy}
-                      onEdit={handleStartEdit}
-                      isAssistant={true}
-                      isLast={isLast}
-                      isEditing={isEditing}
-                      isHovering={isHovering}
-                      onRegenerate={handleRegenerate}
-                      messageId={message.id}
-                      isLiked={isLiked}
-                      isDisliked={isDisliked}
-                      onLike={() => handleToggleLikeDislike("like")}
-                      onDislike={() => handleToggleLikeDislike("dislike")}
-                    />
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent
-                  sideOffset={-440}
-                  side="left"
-                  align="end"
-                  className="w-80 overflow-hidden rounded-2xl p-0"
+            <div className="">
+              <MessageActions
+                onCopy={handleCopy}
+                onEdit={handleStartEdit}
+                isAssistant={true}
+                isLast={isLast}
+                isEditing={isEditing}
+                isHovering={isHovering}
+                onRegenerate={handleRegenerate}
+                messageId={message.id}
+                isLiked={isLiked}
+                isDisliked={isDisliked}
+                onLike={() => handleToggleLikeDislike("like")}
+                onDislike={() => handleToggleLikeDislike("dislike")}
+                onComment={handleShowComment}
+                feedbackComment={feedbackComment}
+              />
+              {showFeedbackPanel && (
+                <div
+                  ref={feedbackPanelRef}
+                  className="absolute bottom-1 left-44 w-80 overflow-hidden rounded-2xl p-0"
                 >
-                  <div className="relative">
+                  <TextareaAutosize
+                    placeholder={`Please explain why you ${isLiked ? "like" : "dislike"} this response...`}
+                    value={feedbackComment}
+                    onValueChange={setFeedbackComment}
+                    minRows={3}
+                    maxRows={6}
+                    className="w-full resize-none rounded-2xl p-4 pr-20 text-sm focus:outline-none"
+                  />
+                  <button
+                    onClick={() => setShowFeedbackPanel(false)}
+                    className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <IconX size={18} />
+                  </button>
+                  <button
+                    onClick={handleSubmitFeedback}
+                    className="absolute bottom-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <UilEnter size={18} />
+                  </button>
+                </div>
+              )}
+              {showCancelFeedbackConfirmation && (
+                <div className="bg-background absolute bottom-1 left-44 w-80 overflow-hidden  rounded-2xl p-4 shadow-lg">
+                  <p className="mb-4 text-sm">
+                    Do you confirm to cancel {isLiked ? "like" : "dislike"}?
+                    This will also remove your comment.
+                  </p>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowCancelFeedbackConfirmation(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={handleCancelFeedback}
+                    >
+                      Confirm
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {showChangeFeedbackPanel && (
+                <div className="bg-background absolute -bottom-10 left-44 z-10 w-80 overflow-hidden rounded-2xl p-4">
+                  <button
+                    onClick={() => setShowChangeFeedbackPanel(false)}
+                    className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <IconX size={18} />
+                  </button>
+                  <div className="mb-4">
+                    <p className="mb-2 text-sm">
+                      Since you previously {isLiked ? "liked" : "disliked"} this
+                      response, do you confirm to change to{" "}
+                      {isLiked ? "dislike" : "like"}? This will cancel your
+                      previous {isLiked ? "like" : "dislike"} and remove your
+                      comment:
+                    </p>
+                    <p className="mb-4 text-sm italic">
+                      &quot;{feedbackComment}&quot;
+                    </p>
+                    <p className="mb-2 text-sm">
+                      Please explain why you {isLiked ? "dislike" : "like"} this
+                      response:
+                    </p>
+                  </div>
+                  <div className="relative mt-2">
                     <TextareaAutosize
-                      placeholder="Please explain your response and provide suggestions if any"
-                      value={feedbackComment}
-                      onValueChange={setFeedbackComment}
+                      value={newFeedbackComment}
+                      onValueChange={setNewFeedbackComment}
                       minRows={3}
                       maxRows={6}
-                      className="w-full resize-none rounded-2xl p-4 pr-20 text-sm focus:outline-none"
+                      className="bg-secondary w-full resize-none rounded-lg p-4 pr-12 text-sm focus:outline-none"
+                      placeholder="Enter your new feedback here..."
                     />
                     <button
-                      onClick={() => setShowFeedbackPanel(false)}
-                      className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      <IconX size={18} />
-                    </button>
-                    <button
-                      onClick={handleSubmitFeedback}
+                      onClick={handleSubmitChangedFeedback}
                       className="absolute bottom-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       <UilEnter size={18} />
                     </button>
                   </div>
-                </PopoverContent>
-              </Popover>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -12,7 +12,7 @@ import { CreateModel } from "./items/models/create-model"
 import { CreatePreset } from "./items/presets/create-preset"
 import { CreatePrompt } from "./items/prompts/create-prompt"
 import { CreateTool } from "./items/tools/create-tool"
-
+//@ts-ignore
 import { UilEdit, UilLeftArrowFromLeft } from "@iconscout/react-unicons"
 
 interface SidebarCreateButtonsProps {
