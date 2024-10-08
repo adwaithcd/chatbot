@@ -28,11 +28,6 @@ import { MessageMarkdown } from "./message-markdown"
 import { UilRobot, UilEnter } from "@iconscout/react-unicons"
 import { useTheme } from "next-themes"
 import { updateMessage } from "@/db/messages"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover"
 
 const ICON_SIZE = 32
 
@@ -263,7 +258,7 @@ export const Message: FC<MessageProps> = ({
   const handleSubmitFeedback = async () => {
     try {
       const updatedMessage = await updateMessage(message.id, {
-        feedback_message: feedbackComment
+        feedback_message: newFeedbackComment
       })
 
       // Update the message in the chat messages
@@ -276,6 +271,8 @@ export const Message: FC<MessageProps> = ({
       )
 
       setShowFeedbackPanel(false)
+      setNewFeedbackComment("") // Reset after submission
+      setFeedbackComment(newFeedbackComment)
     } catch (error) {
       console.error("Error updating feedback message:", error)
     }
@@ -294,6 +291,7 @@ export const Message: FC<MessageProps> = ({
       setIsDisliked(false)
       setFeedbackComment("")
       setShowCancelFeedbackConfirmation(false)
+      setShowFeedbackPanel(false)
 
       setChatMessages(prevMessages =>
         prevMessages.map(chatMessage =>
@@ -309,7 +307,13 @@ export const Message: FC<MessageProps> = ({
 
   const handleShowComment = () => {
     setShowCancelFeedbackConfirmation(false)
+    setNewFeedbackComment(feedbackComment) // Set newFeedbackComment with current feedback
     setShowFeedbackPanel(true)
+  }
+
+  const handleCloseFeedbackPanel = () => {
+    setShowFeedbackPanel(false)
+    setNewFeedbackComment("") // Reset when closing the panel
   }
 
   const handleSubmitChangedFeedback = async () => {
@@ -328,6 +332,7 @@ export const Message: FC<MessageProps> = ({
       setIsDisliked(updatedDislikeStatus)
       setFeedbackComment(newFeedbackComment)
       setShowChangeFeedbackPanel(false)
+      setShowFeedbackPanel(false)
 
       setChatMessages(prevMessages =>
         prevMessages.map(chatMessage =>
@@ -610,14 +615,14 @@ export const Message: FC<MessageProps> = ({
                 >
                   <TextareaAutosize
                     placeholder={`Please explain why you ${isLiked ? "like" : "dislike"} this response...`}
-                    value={feedbackComment}
-                    onValueChange={setFeedbackComment}
+                    value={newFeedbackComment}
+                    onValueChange={setNewFeedbackComment}
                     minRows={3}
                     maxRows={6}
                     className="w-full resize-none rounded-2xl p-4 pr-20 text-sm focus:outline-none"
                   />
                   <button
-                    onClick={() => setShowFeedbackPanel(false)}
+                    onClick={handleCloseFeedbackPanel}
                     className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   >
                     <IconX size={18} />
