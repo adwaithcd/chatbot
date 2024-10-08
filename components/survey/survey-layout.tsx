@@ -23,6 +23,18 @@ const steps = [
   { id: 5, name: "Challenges" }
 ]
 
+interface FormData {
+  application_year?: number | null
+  city?: string | null
+  state?: string | null
+  high_school_name?: string | null
+  high_school_gpa?: number | null
+  max_gpa?: number | null
+  zipcode?: string | null
+  country?: string | null
+  [key: string]: any // for other dynamic properties
+}
+
 interface TestScore {
   id: string
   test_name: string
@@ -39,13 +51,14 @@ const SurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
-  const [formData, setFormData] = useState({})
+
+  const [formData, setFormData] = useState<FormData>({})
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([
-    { id: "1", test_name: "ACT", test_score: 0, isChecked: false },
-    { id: "2", test_name: "SAT", test_score: 0, isChecked: false },
-    { id: "3", test_name: "AP", test_score: 0, isChecked: false },
-    { id: "4", test_name: "IB", test_score: 0, isChecked: false }
+    { id: "1", test_name: "ACT", test_score: null, isChecked: false },
+    { id: "2", test_name: "SAT", test_score: null, isChecked: false },
+    { id: "3", test_name: "AP", test_score: null, isChecked: false },
+    { id: "4", test_name: "IB", test_score: null, isChecked: false }
   ])
 
   // useEffect(() => {
@@ -221,9 +234,6 @@ const SurveyLayout = () => {
           />
         )
       case 2:
-        console.log("sending test scores")
-        console.log(testScores)
-
         return (
           <TestScoresForm
             testScores={testScores}
@@ -401,12 +411,18 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
   testScores,
   setTestScores
 }) => {
-  console.log("inside test")
-  console.log(testScores)
   const handleScoreChange = (id: string, newScore: number) => {
     setTestScores(prev =>
       prev.map(score =>
         score.id === id ? { ...score, test_score: newScore } : score
+      )
+    )
+  }
+
+  const handleNameChange = (id: string, newName: string) => {
+    setTestScores(prev =>
+      prev.map(score =>
+        score.id === id ? { ...score, test_name: newName } : score
       )
     )
   }
@@ -423,7 +439,7 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
       {
         id: Date.now().toString(),
         test_name: "",
-        test_score: 0,
+        test_score: null,
         isChecked: true
       }
     ])
@@ -448,19 +464,13 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
             />
             <Input
               type="text"
-              placeholder={score.test_name || "Test Name"}
+              placeholder="Test Name"
               value={score.test_name}
-              onChange={e =>
-                setTestScores(prev =>
-                  prev.map(s =>
-                    s.id === score.id ? { ...s, name: e.target.value } : s
-                  )
-                )
-              }
+              onChange={e => handleNameChange(score.id, e.target.value)}
               disabled={!score.isChecked}
             />
             <Input
-              type="text"
+              type="number"
               placeholder="Score"
               value={score.test_score ?? ""}
               onChange={e =>
