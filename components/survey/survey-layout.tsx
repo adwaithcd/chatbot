@@ -14,6 +14,7 @@ import {
 } from "@/db/survey-responses"
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -40,6 +41,7 @@ interface TestScore {
   test_name: string
   test_score: number | null
   isChecked: boolean
+  isEditable: boolean
 }
 
 interface TestScoresFormProps {
@@ -55,10 +57,34 @@ const SurveyLayout = () => {
   const [formData, setFormData] = useState<FormData>({})
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([
-    { id: "1", test_name: "ACT", test_score: null, isChecked: false },
-    { id: "2", test_name: "SAT", test_score: null, isChecked: false },
-    { id: "3", test_name: "AP", test_score: null, isChecked: false },
-    { id: "4", test_name: "IB", test_score: null, isChecked: false }
+    {
+      id: "1",
+      test_name: "ACT",
+      test_score: null,
+      isChecked: false,
+      isEditable: false
+    },
+    {
+      id: "2",
+      test_name: "SAT",
+      test_score: null,
+      isChecked: false,
+      isEditable: false
+    },
+    {
+      id: "3",
+      test_name: "AP",
+      test_score: null,
+      isChecked: false,
+      isEditable: false
+    },
+    {
+      id: "4",
+      test_name: "IB",
+      test_score: null,
+      isChecked: false,
+      isEditable: false
+    }
   ])
 
   // useEffect(() => {
@@ -151,7 +177,8 @@ const SurveyLayout = () => {
                     id: s.survey_id,
                     test_name: s.test_name,
                     test_score: s.test_score,
-                    isChecked: true
+                    isChecked: true,
+                    isEditable: true
                   }))
               )
           )
@@ -411,10 +438,12 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
   testScores,
   setTestScores
 }) => {
-  const handleScoreChange = (id: string, newScore: number) => {
+  const handleScoreChange = (id: string, newScore: string) => {
     setTestScores(prev =>
       prev.map(score =>
-        score.id === id ? { ...score, test_score: newScore } : score
+        score.id === id
+          ? { ...score, test_score: newScore === "" ? null : Number(newScore) }
+          : score
       )
     )
   }
@@ -440,51 +469,64 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
         id: Date.now().toString(),
         test_name: "",
         test_score: null,
-        isChecked: true
+        isChecked: true,
+        isEditable: true
       }
     ])
   }
 
   return (
-    <form className="w-full max-w-2xl space-y-8">
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
-          Enter your test scores:
-        </Label>
-        <Label className="text-base font-semibold">
-          5. Did you take any of the following standardized tests?
-        </Label>
+    <div className="w-full max-w-2xl space-y-8">
+      <Label className="text-base font-semibold">
+        5. Did you take any of the following standardized tests?
+      </Label>
+      <p className="text-sm text-gray-500">
+        Select all that apply and specify your scores for each test taken.
+      </p>
 
+      <div className="space-y-4">
         {testScores.map(score => (
           <div key={score.id} className="flex items-center space-x-4">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={score.isChecked}
-              onChange={e => handleCheckChange(score.id, e.target.checked)}
+              onCheckedChange={checked =>
+                handleCheckChange(score.id, checked as boolean)
+              }
+              className="size-5"
             />
+            {score.isEditable ? (
+              <Input
+                type="text"
+                value={score.test_name}
+                onChange={e => handleNameChange(score.id, e.target.value)}
+                disabled={!score.isChecked}
+                className="w-1/3 border-none focus:outline-none"
+                placeholder="Test Name"
+              />
+            ) : (
+              <span className="w-1/3">{score.test_name}</span>
+            )}
             <Input
               type="text"
-              placeholder="Test Name"
-              value={score.test_name}
-              onChange={e => handleNameChange(score.id, e.target.value)}
-              disabled={!score.isChecked}
-            />
-            <Input
-              type="number"
-              placeholder="Score"
               value={score.test_score ?? ""}
-              onChange={e =>
-                handleScoreChange(score.id, Number(e.target.value))
-              }
+              onChange={e => handleScoreChange(score.id, e.target.value)}
               disabled={!score.isChecked}
+              className="w-1/3"
+              placeholder="Score"
             />
           </div>
         ))}
-        <Button type="button" onClick={handleAddNewTest}>
-          Add a new test
-        </Button>
       </div>
-    </form>
+
+      <Button
+        type="button"
+        onClick={handleAddNewTest}
+        variant="outline"
+        className="mt-4"
+      >
+        + Add a new test
+      </Button>
+    </div>
   )
 }
 
