@@ -205,38 +205,84 @@ export const Message: FC<MessageProps> = ({
   const handleToggleLikeDislike = async (action: "like" | "dislike") => {
     if (!message) return
 
-    // Check if the clicked action is already active
-    if (
-      (action === "like" && isLiked) ||
-      (action === "dislike" && isDisliked)
-    ) {
-      // If already liked or disliked show confirmation to reset
-      setShowCancelFeedbackConfirmation(true)
-      return
-    }
-
-    // Check if user is changing feedback
-    const isChangingFeedback =
-      (action === "like" && isDisliked) || (action === "dislike" && isLiked)
-
-    if (isChangingFeedback) {
-      setShowChangeFeedbackPanel(true)
-      setNewFeedbackComment("")
-      return
-    }
+    const isCurrentlyLiked = isLiked
+    const isCurrentlyDisliked = isDisliked
+    const hasExistingFeedback = feedbackComment.length > 0
 
     const updatedLikeStatus = action === "like"
     const updatedDislikeStatus = action === "dislike"
 
-    setIsLiked(updatedLikeStatus)
-    setIsDisliked(updatedDislikeStatus)
-    setShowFeedbackPanel(true)
+    // Case 1: User is toggling the current state
+    if (
+      (action === "like" && isCurrentlyLiked) ||
+      (action === "dislike" && isCurrentlyDisliked)
+    ) {
+      if (hasExistingFeedback) {
+        setShowCancelFeedbackConfirmation(true)
+      } else {
+        // Directly update to default state if no feedback
+        await updateMessageInDB(
+          false,
+          false,
+          "",
+          isCurrentlyLiked,
+          isCurrentlyDisliked
+        )
+        setShowFeedbackPanel(false)
+      }
+      return
+    }
 
+    // Case 2: User is changing from like to dislike or vice versa
+    if (
+      (action === "like" && isCurrentlyDisliked) ||
+      (action === "dislike" && isCurrentlyLiked)
+    ) {
+      if (hasExistingFeedback) {
+        setShowChangeFeedbackPanel(true)
+        setNewFeedbackComment("")
+      } else {
+        updateMessageInDB(
+          updatedLikeStatus,
+          updatedDislikeStatus,
+          "",
+          isCurrentlyLiked,
+          isCurrentlyDisliked
+        )
+        setShowFeedbackPanel(true)
+      }
+      return
+    }
+
+    // Case 3: First time liking/disliking
+    await updateMessageInDB(
+      updatedLikeStatus,
+      updatedDislikeStatus,
+      feedbackComment,
+      isCurrentlyLiked,
+      isCurrentlyDisliked
+    )
+    setShowFeedbackPanel(true)
+  }
+
+  // Helper function to update message in DB and state
+  const updateMessageInDB = async (
+    newLikeStatus: boolean,
+    newDislikeStatus: boolean,
+    newFeedbackMessage: string,
+    isCurrentlyLiked: boolean,
+    isCurrentlyDisliked: boolean
+  ) => {
     try {
       const updatedMessage = await updateMessage(message.id, {
-        is_liked: updatedLikeStatus,
-        is_disliked: updatedDislikeStatus
+        is_liked: newLikeStatus,
+        is_disliked: newDislikeStatus,
+        feedback_message: newFeedbackMessage
       })
+
+      setIsLiked(newLikeStatus)
+      setIsDisliked(newDislikeStatus)
+      setFeedbackComment(newFeedbackMessage)
 
       // Update the message in the chat messages
       setChatMessages(prevMessages =>
@@ -249,9 +295,8 @@ export const Message: FC<MessageProps> = ({
     } catch (error) {
       console.error("Error updating like/dislike status:", error)
       // Revert the UI state if the update fails
-      setIsLiked(message.is_liked ?? false)
-      setIsDisliked(message.is_disliked ?? false)
-      setShowFeedbackPanel(false)
+      setIsLiked(isCurrentlyLiked)
+      setIsDisliked(isCurrentlyDisliked)
     }
   }
 
@@ -271,8 +316,8 @@ export const Message: FC<MessageProps> = ({
       )
 
       setShowFeedbackPanel(false)
-      setNewFeedbackComment("") // Reset after submission
       setFeedbackComment(newFeedbackComment)
+      setNewFeedbackComment("") // Reset after submission
     } catch (error) {
       console.error("Error updating feedback message:", error)
     }
