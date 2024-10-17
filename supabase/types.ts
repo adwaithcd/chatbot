@@ -1402,7 +1402,7 @@ export type Database = {
           score_id: string
           survey_id: string
           test_name: string
-          test_score: number | null
+          test_score: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1410,7 +1410,7 @@ export type Database = {
           score_id?: string
           survey_id: string
           test_name: string
-          test_score?: number | null
+          test_score?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1418,7 +1418,7 @@ export type Database = {
           score_id?: string
           survey_id?: string
           test_name?: string
-          test_score?: number | null
+          test_score?: string | null
           updated_at?: string | null
         }
         Relationships: [

@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS test_scores (
   score_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   survey_id UUID NOT NULL REFERENCES survey_responses(survey_id) ON DELETE CASCADE,
   test_name TEXT NOT NULL,
-  test_score NUMERIC(5,2),
+  test_score TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );

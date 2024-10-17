@@ -57,6 +57,19 @@ export const updateSurveyResponse = async (
   return updatedSurveyResponse
 }
 
+export const upsertSurveyResponse = async (
+  surveyData: TablesInsert<"survey_responses">
+) => {
+  const { data: surveyResponse, error } = await supabase
+    .from("survey_responses")
+    .upsert(surveyData)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return surveyResponse
+}
+
 export const updateSurveyResponseStep = async (
   surveyId: string,
   step: number,
@@ -259,12 +272,11 @@ export const deleteCollegeApplication = async (applicationId: string) => {
 }
 
 export const addOrUpdateTestScore = async (
-  surveyId: string,
   testScore: TablesInsert<"test_scores">
 ) => {
   const { data, error } = await supabase
     .from("test_scores")
-    .upsert({ ...testScore, survey_id: surveyId })
+    .upsert(testScore)
     .select()
     .single()
 

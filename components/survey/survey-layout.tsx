@@ -7,14 +7,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   updateSurveyResponseStep,
-  getOrCreateSurveyResponse,
-  updateSurveyResponse,
   getTestScores,
-  addOrUpdateTestScore
+  addOrUpdateTestScore,
+  getSurveyResponseByUserId,
+  upsertSurveyResponse,
+  deleteTestScore,
+  getCollegeApplications
 } from "@/db/survey-responses"
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
 import { Checkbox } from "@/components/ui/checkbox"
+import { v4 as uuidv4 } from "uuid"
+import { CollegeApplications, SurveyForm, TestScore } from "./surveyTypes"
+import BackgroundForm from "./steps/background-form"
+import TestScoresForm from "./steps/test-score-form"
+import ApplicationHistoryForm from "./steps/application-history-form"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -24,119 +31,85 @@ const steps = [
   { id: 5, name: "Challenges" }
 ]
 
-interface FormData {
-  application_year?: number | null
-  city?: string | null
-  state?: string | null
-  high_school_name?: string | null
-  high_school_gpa?: number | null
-  max_gpa?: number | null
-  zipcode?: string | null
-  country?: string | null
-  [key: string]: any // for other dynamic properties
-}
-
-interface TestScore {
-  id: string
-  test_name: string
-  test_score: number | null
-  isChecked: boolean
-  isEditable: boolean
-}
-
-interface TestScoresFormProps {
-  testScores: TestScore[]
-  setTestScores: React.Dispatch<React.SetStateAction<TestScore[]>>
-}
+const DEFAULT_TESTS = ["ACT", "SAT", "AP", "IB"]
 
 const SurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
 
-  const [formData, setFormData] = useState<FormData>({})
+  const [surveyFormData, setSurveyFormData] = useState<SurveyForm>({
+    survey_id: uuidv4(),
+    user_id: profile?.user_id || "",
+    application_year: null,
+    city: null,
+    state: null,
+    high_school_name: null,
+    high_school_gpa: null,
+    max_gpa: null,
+    zipcode: null,
+    country: null
+  })
   const [surveyId, setSurveyId] = useState("")
-  const [testScores, setTestScores] = useState<TestScore[]>([
-    {
-      id: "1",
-      test_name: "ACT",
-      test_score: null,
-      isChecked: false,
-      isEditable: false
-    },
-    {
-      id: "2",
-      test_name: "SAT",
-      test_score: null,
-      isChecked: false,
-      isEditable: false
-    },
-    {
-      id: "3",
-      test_name: "AP",
-      test_score: null,
-      isChecked: false,
-      isEditable: false
-    },
-    {
-      id: "4",
-      test_name: "IB",
-      test_score: null,
-      isChecked: false,
-      isEditable: false
-    }
-  ])
-
-  // useEffect(() => {
-  //   const fetchSurveyResponse = async () => {
-  //     if (profile) {
-  //       setIsLoading(true);
-  //       try {
-  //         const surveyResponse = await getOrCreateSurveyResponse(profile.user_id);
-  //         setFormData(surveyResponse);
-  //         setSurveyId(surveyResponse.survey_id);
-  //         setCurrentStep(surveyResponse.step_completed + 1);
-
-  //         // Fetch test scores
-  //         const scores = await getTestScores(surveyResponse.survey_id);
-
-  //         setTestScores(testScores.map(score => {
-  //           const existingScore = scores.find(s => s.test_name === score.test_name);
-  //           return existingScore
-  //             ? { ...score, test_score: existingScore.test_score, isChecked: true }
-  //             : score;
-  //         }).concat(
-  //           scores.filter(s => !testScores.some(ps => ps.test_name === s.test_name))
-  //             .map(s => ({
-  //               id: s.survey_id,
-  //               test_name: s.test_name,
-  //               test_score: s.test_score,
-  //               isChecked: true
-  //             }))
-  //         ));
-  //         console.log("scores set");
-  //         console.log(testScores)
-  //       } catch (error) {
-  //         console.error("Error fetching survey data:", error);
-  //       } finally {
-  //         setIsLoading(false);
-  //       }
-  //     }
-  //   };
-  //   fetchSurveyResponse();
-  // }, [profile]);
+  const [testScores, setTestScores] = useState<TestScore[]>([])
+  const [applications, setApplications] = useState<CollegeApplications[]>([])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
       if (profile) {
         setIsLoading(true)
         try {
-          const surveyResponse = await getOrCreateSurveyResponse(
+          const surveyResponse = await getSurveyResponseByUserId(
             profile.user_id
           )
-          setFormData(surveyResponse)
-          setSurveyId(surveyResponse.survey_id)
-          setCurrentStep(surveyResponse.step_completed + 1)
+          if (surveyResponse) {
+            setSurveyFormData({
+              survey_id: surveyResponse.survey_id,
+              user_id: profile.user_id,
+              application_year: surveyResponse.application_year,
+              city: surveyResponse.city,
+              state: surveyResponse.state,
+              high_school_name: surveyResponse.high_school_name,
+              high_school_gpa: surveyResponse.high_school_gpa,
+              max_gpa: surveyResponse.max_gpa,
+              zipcode: surveyResponse.zipcode,
+              country: surveyResponse.country
+            })
+            setSurveyId(surveyResponse.survey_id)
+            setCurrentStep(surveyResponse.step_completed + 1)
+
+            //get data for other forms if they are done
+            if (surveyResponse.step_completed >= 1) {
+              const scores = await getTestScores(surveyResponse.survey_id)
+              setTestScores(
+                scores.map(score => ({
+                  score_id: score.score_id,
+                  test_name: score.test_name,
+                  test_score: score.test_score,
+                  isChecked: score.test_score !== null,
+                  isUserAdded: false
+                }))
+              )
+
+              const applications = await getCollegeApplications(
+                surveyResponse.survey_id
+              )
+              setApplications(
+                applications.map(application => ({
+                  application_id: application.application_id,
+                  college_name: application.college_name,
+                  major: application.major,
+                  offer_status: application.offer_status
+                }))
+              )
+            }
+          } else {
+            setSurveyId(surveyFormData.survey_id)
+            setSurveyFormData(prevData => ({
+              ...prevData,
+              user_id: profile.user_id
+            }))
+          }
         } catch (error) {
           console.error("Error fetching survey data:", error)
         } finally {
@@ -147,52 +120,8 @@ const SurveyLayout = () => {
     fetchSurveyResponse()
   }, [profile])
 
-  useEffect(() => {
-    const fetchTestScores = async () => {
-      if (surveyId) {
-        try {
-          const scores = await getTestScores(surveyId)
-
-          setTestScores(prevTestScores =>
-            prevTestScores
-              .map(score => {
-                const existingScore = scores.find(
-                  s => s.test_name === score.test_name
-                )
-                return existingScore
-                  ? {
-                      ...score,
-                      test_score: existingScore.test_score,
-                      isChecked: true
-                    }
-                  : score
-              })
-              .concat(
-                scores
-                  .filter(
-                    s =>
-                      !prevTestScores.some(ps => ps.test_name === s.test_name)
-                  )
-                  .map(s => ({
-                    id: s.survey_id,
-                    test_name: s.test_name,
-                    test_score: s.test_score,
-                    isChecked: true,
-                    isEditable: true
-                  }))
-              )
-          )
-          console.log("Test scores updated:", testScores)
-        } catch (error) {
-          console.error("Error fetching test scores:", error)
-        }
-      }
-    }
-    fetchTestScores()
-  }, [surveyId])
-
   const handleInputChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setSurveyFormData({ ...surveyFormData, [e.target.name]: e.target.value })
   }
 
   const handleNextStep = async () => {
@@ -200,18 +129,11 @@ const SurveyLayout = () => {
       try {
         switch (currentStep) {
           case 1:
-            await updateSurveyResponse(surveyId, formData)
+            await upsertSurveyResponse(surveyFormData)
+            await initializeTestScores()
             break
           case 2:
-            for (const score of testScores) {
-              if (score.isChecked && score.test_score) {
-                await addOrUpdateTestScore(surveyId, {
-                  test_name: score.test_name,
-                  test_score: score.test_score,
-                  survey_id: surveyId
-                })
-              }
-            }
+            await updateTestScores()
             break
           case 3:
             // await addOrUpdateCollegeApplication(surveyId, formData);
@@ -231,18 +153,74 @@ const SurveyLayout = () => {
     }
   }
 
+  const initializeTestScores = async () => {
+    const existingScores = await getTestScores(surveyId)
+    // Create default test score rows only if no scores exist
+    if (existingScores.length === 0) {
+      for (const testName of DEFAULT_TESTS) {
+        await addOrUpdateTestScore({
+          score_id: uuidv4(),
+          survey_id: surveyId,
+          test_name: testName,
+          test_score: null
+        })
+      }
+    }
+    await updateTestScoresState()
+  }
+
+  const updateTestScores = async () => {
+    for (const score of testScores) {
+      if (score.isChecked && score.test_score !== null) {
+        await addOrUpdateTestScore({
+          score_id: score.score_id,
+          survey_id: surveyId,
+          test_name: score.test_name,
+          test_score: score.test_score
+        })
+      } else if (DEFAULT_TESTS.includes(score.test_name)) {
+        await addOrUpdateTestScore({
+          score_id: score.score_id,
+          survey_id: surveyId,
+          test_name: score.test_name,
+          test_score: null
+        })
+      } else {
+        await deleteTestScore(score.score_id)
+      }
+    }
+    await updateTestScoresState()
+  }
+
+  const updateTestScoresState = async () => {
+    const fetchedScores = await getTestScores(surveyId)
+    const updatedScores = fetchedScores.map(score => ({
+      ...score,
+      isChecked: score.test_score !== null,
+      isUserAdded: false
+    }))
+    setTestScores(updatedScores)
+  }
+
   const isStepComplete = () => {
     switch (currentStep) {
       case 1:
         return (
-          formData.application_year &&
-          formData.city &&
-          formData.state &&
-          formData.high_school_name &&
-          formData.high_school_gpa &&
-          formData.max_gpa
+          surveyFormData.application_year &&
+          surveyFormData.city &&
+          surveyFormData.state &&
+          surveyFormData.high_school_name &&
+          surveyFormData.high_school_gpa &&
+          surveyFormData.max_gpa
         )
-      // Implement checks for other steps
+      case 2:
+        return testScores.every(
+          score =>
+            !score.isChecked ||
+            (score.isChecked &&
+              score.test_score !== null &&
+              score.test_name !== "")
+        )
       default:
         return true
     }
@@ -256,8 +234,8 @@ const SurveyLayout = () => {
       case 1:
         return (
           <BackgroundForm
-            formData={formData}
-            handleInputChange={handleInputChange}
+            formData={surveyFormData}
+            setFormData={setSurveyFormData}
           />
         )
       case 2:
@@ -267,25 +245,24 @@ const SurveyLayout = () => {
             setTestScores={setTestScores}
           />
         )
-      // return <></>
       case 3:
         return (
           <ApplicationHistoryForm
-            formData={formData}
-            handleInputChange={handleInputChange}
+            applications={applications}
+            setApplications={setApplications}
           />
         )
       case 4:
         return (
           <ImpactFactorsForm
-            formData={formData}
+            formData={surveyFormData}
             handleInputChange={handleInputChange}
           />
         )
       case 5:
         return (
           <ChallengesForm
-            formData={formData}
+            formData={surveyFormData}
             handleInputChange={handleInputChange}
           />
         )
@@ -339,231 +316,40 @@ const SurveyLayout = () => {
   )
 }
 
-const BackgroundForm = ({ formData, handleInputChange }) => {
-  return (
-    <form className="w-full max-w-2xl space-y-8">
-      <div className="flex items-center pb-4">
-        <Label htmlFor="application_year" className="text-base font-semibold">
-          1. Which year did you apply to college?
-        </Label>
-        <div className="ml-6 shrink-0">
-          <Input
-            type="number"
-            id="application_year"
-            name="application_year"
-            placeholder="YYYY"
-            value={formData.application_year || ""}
-            onChange={handleInputChange}
-            className="w-32"
-          />
-        </div>
-      </div>
-      <div className="space-y-4 pb-4">
-        <Label className="text-base font-semibold">
-          2. Where did you apply from?
-        </Label>
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            type="text"
-            placeholder="City"
-            name="city"
-            value={formData.city || ""}
-            onChange={handleInputChange}
-          />
-          <Input
-            type="text"
-            placeholder="State/Province"
-            name="state"
-            value={formData.state || ""}
-            onChange={handleInputChange}
-          />
-          <Input
-            type="text"
-            placeholder="Zipcode"
-            name="zipcode"
-            value={formData.zipcode || ""}
-            onChange={handleInputChange}
-          />
-          <Input
-            type="text"
-            placeholder="Country if non-US"
-            name="country"
-            value={formData.country || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
-      <div className="space-y-2 pb-4">
-        <Label htmlFor="high_school_name" className="text-base font-semibold">
-          3. What is the name of your most recent secondary/high school?
-        </Label>
-        <Input
-          type="text"
-          id="high_school_name"
-          name="high_school_name"
-          value={formData.high_school_name || ""}
-          onChange={handleInputChange}
-          className="max-w-md"
-        />
-      </div>
-      <div className="flex items-center pb-4">
-        <Label className="text-base font-semibold">
-          4. What is your secondary/high school GPA?
-        </Label>
-        <div className="ml-6 flex shrink-0 items-center space-x-2">
-          <Input
-            type="text"
-            className="w-20"
-            placeholder="3.0"
-            name="high_school_gpa"
-            value={formData.high_school_gpa || ""}
-            onChange={handleInputChange}
-          />
-          <span>out of</span>
-          <Input
-            type="text"
-            className="w-20"
-            placeholder="4.0"
-            name="max_gpa"
-            value={formData.max_gpa || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
-    </form>
-  )
-}
-
-const TestScoresForm: React.FC<TestScoresFormProps> = ({
-  testScores,
-  setTestScores
-}) => {
-  const handleScoreChange = (id: string, newScore: string) => {
-    setTestScores(prev =>
-      prev.map(score =>
-        score.id === id
-          ? { ...score, test_score: newScore === "" ? null : Number(newScore) }
-          : score
-      )
-    )
-  }
-
-  const handleNameChange = (id: string, newName: string) => {
-    setTestScores(prev =>
-      prev.map(score =>
-        score.id === id ? { ...score, test_name: newName } : score
-      )
-    )
-  }
-
-  const handleCheckChange = (id: string, isChecked: boolean) => {
-    setTestScores(prev =>
-      prev.map(score => (score.id === id ? { ...score, isChecked } : score))
-    )
-  }
-
-  const handleAddNewTest = () => {
-    setTestScores(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        test_name: "",
-        test_score: null,
-        isChecked: true,
-        isEditable: true
-      }
-    ])
-  }
-
-  return (
-    <div className="w-full max-w-2xl space-y-8">
-      <Label className="text-base font-semibold">
-        5. Did you take any of the following standardized tests?
-      </Label>
-      <p className="text-sm text-gray-500">
-        Select all that apply and specify your scores for each test taken.
-      </p>
-
-      <div className="space-y-4">
-        {testScores.map(score => (
-          <div key={score.id} className="flex items-center space-x-4">
-            <Checkbox
-              checked={score.isChecked}
-              onCheckedChange={checked =>
-                handleCheckChange(score.id, checked as boolean)
-              }
-              className="size-5"
-            />
-            {score.isEditable ? (
-              <Input
-                type="text"
-                value={score.test_name}
-                onChange={e => handleNameChange(score.id, e.target.value)}
-                disabled={!score.isChecked}
-                className="w-1/3 border-none focus:outline-none"
-                placeholder="Test Name"
-              />
-            ) : (
-              <span className="w-1/3">{score.test_name}</span>
-            )}
-            <Input
-              type="text"
-              value={score.test_score ?? ""}
-              onChange={e => handleScoreChange(score.id, e.target.value)}
-              disabled={!score.isChecked}
-              className="w-1/3"
-              placeholder="Score"
-            />
-          </div>
-        ))}
-      </div>
-
-      <Button
-        type="button"
-        onClick={handleAddNewTest}
-        variant="outline"
-        className="mt-4"
-      >
-        + Add a new test
-      </Button>
-    </div>
-  )
-}
-
-const ApplicationHistoryForm = ({ formData, handleInputChange }) => {
-  return (
-    <form className="w-full max-w-2xl space-y-8">
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
-          Enter a college application:
-        </Label>
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            type="text"
-            placeholder="College Name"
-            name="college_name"
-            value={formData.college_name || ""}
-            onChange={handleInputChange}
-          />
-          <Input
-            type="text"
-            placeholder="Major"
-            name="major"
-            value={formData.major || ""}
-            onChange={handleInputChange}
-          />
-          <Input
-            type="text"
-            placeholder="Application Status"
-            name="offer_status"
-            value={formData.offer_status || ""}
-            onChange={handleInputChange}
-          />
-        </div>
-      </div>
-    </form>
-  )
-}
+// const ApplicationHistoryForm = ({ formData, handleInputChange }) => {
+//   return (
+//     <form className="w-full max-w-2xl space-y-8">
+//       <div className="space-y-4">
+//       <Label className="text-base font-semibold">
+//         6. What colleges and majors have you applied to? Have you received an offer?
+//       </Label>
+//         <div className="grid grid-cols-2 gap-4">
+//           <Input
+//             type="text"
+//             placeholder="College Name"
+//             name="college_name"
+//             value={formData.college_name || ""}
+//             onChange={handleInputChange}
+//           />
+//           <Input
+//             type="text"
+//             placeholder="Major"
+//             name="major"
+//             value={formData.major || ""}
+//             onChange={handleInputChange}
+//           />
+//           <Input
+//             type="text"
+//             placeholder="Application Status"
+//             name="offer_status"
+//             value={formData.offer_status || ""}
+//             onChange={handleInputChange}
+//           />
+//         </div>
+//       </div>
+//     </form>
+//   )
+// }
 
 const ImpactFactorsForm = ({ formData, handleInputChange }) => {
   return (
