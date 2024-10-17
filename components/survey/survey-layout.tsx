@@ -12,11 +12,11 @@ import {
   getSurveyResponseByUserId,
   upsertSurveyResponse,
   deleteTestScore,
-  getCollegeApplications
+  getCollegeApplications,
+  addOrUpdateCollegeApplication
 } from "@/db/survey-responses"
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
-import { Checkbox } from "@/components/ui/checkbox"
 import { v4 as uuidv4 } from "uuid"
 import { CollegeApplications, SurveyForm, TestScore } from "./surveyTypes"
 import BackgroundForm from "./steps/background-form"
@@ -37,6 +37,7 @@ const SurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
+  const [stepCompleted, setStepCompleted] = useState(0)
 
   const [surveyFormData, setSurveyFormData] = useState<SurveyForm>({
     survey_id: uuidv4(),
@@ -48,7 +49,8 @@ const SurveyLayout = () => {
     high_school_gpa: null,
     max_gpa: null,
     zipcode: null,
-    country: null
+    country: null,
+    current_enrolled_program: null
   })
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([])
@@ -73,9 +75,11 @@ const SurveyLayout = () => {
               high_school_gpa: surveyResponse.high_school_gpa,
               max_gpa: surveyResponse.max_gpa,
               zipcode: surveyResponse.zipcode,
-              country: surveyResponse.country
+              country: surveyResponse.country,
+              current_enrolled_program: surveyResponse.current_enrolled_program
             })
             setSurveyId(surveyResponse.survey_id)
+            setStepCompleted(surveyResponse.step_completed)
             setCurrentStep(surveyResponse.step_completed + 1)
 
             //get data for other forms if they are done
@@ -90,18 +94,31 @@ const SurveyLayout = () => {
                   isUserAdded: false
                 }))
               )
+            }
 
+            if (surveyResponse.step_completed >= 2) {
               const applications = await getCollegeApplications(
                 surveyResponse.survey_id
               )
-              setApplications(
-                applications.map(application => ({
-                  application_id: application.application_id,
-                  college_name: application.college_name,
-                  major: application.major,
-                  offer_status: application.offer_status
-                }))
-              )
+              if (applications.length > 0) {
+                setApplications(
+                  applications.map(application => ({
+                    application_id: application.application_id,
+                    college_name: application.college_name,
+                    major: application.major,
+                    offer_status: application.offer_status
+                  }))
+                )
+              } else {
+                setApplications([
+                  {
+                    application_id: uuidv4(),
+                    college_name: "",
+                    major: "",
+                    offer_status: "Offer received"
+                  }
+                ])
+              }
             }
           } else {
             setSurveyId(surveyFormData.survey_id)
@@ -129,14 +146,24 @@ const SurveyLayout = () => {
       try {
         switch (currentStep) {
           case 1:
-            await upsertSurveyResponse(surveyFormData)
+            await upsertSurveyResponse({
+              ...surveyFormData,
+              current_enrolled_program:
+                surveyFormData.current_enrolled_program ?? null
+            })
             await initializeTestScores()
             break
           case 2:
             await updateTestScores()
+            await initializeCollegeApplications()
             break
           case 3:
-            // await addOrUpdateCollegeApplication(surveyId, formData);
+            await updateApplications()
+            await upsertSurveyResponse({
+              ...surveyFormData,
+              current_enrolled_program:
+                surveyFormData.current_enrolled_program ?? null
+            })
             break
           case 4:
             // await updateImpactFactors(surveyId, formData.impact_factors);
@@ -145,7 +172,12 @@ const SurveyLayout = () => {
             // await updateChallenges(surveyId, formData.challenges);
             break
         }
-        await updateSurveyResponseStep(surveyId, currentStep, {})
+        // Only update stepCompleted if we're moving to a new step
+        if (currentStep > stepCompleted) {
+          await updateSurveyResponseStep(surveyId, currentStep, {})
+          setStepCompleted(currentStep)
+        }
+
         setCurrentStep(currentStep + 1)
       } catch (error) {
         console.error("Error updating survey data:", error)
@@ -202,6 +234,41 @@ const SurveyLayout = () => {
     setTestScores(updatedScores)
   }
 
+  const initializeCollegeApplications = async () => {
+    const existingApplications = await getCollegeApplications(
+      surveyFormData.survey_id
+    )
+    console.log("existingApplications", existingApplications)
+    if (existingApplications.length > 0) {
+      setApplications(
+        existingApplications.map(application => ({
+          application_id: application.application_id,
+          college_name: application.college_name,
+          major: application.major,
+          offer_status: application.offer_status
+        }))
+      )
+    } else {
+      setApplications([
+        {
+          application_id: uuidv4(),
+          college_name: "",
+          major: "",
+          offer_status: "Offer received"
+        }
+      ])
+    }
+  }
+
+  const updateApplications = async () => {
+    for (const application of applications) {
+      await addOrUpdateCollegeApplication({
+        ...application,
+        survey_id: surveyId
+      })
+    }
+  }
+
   const isStepComplete = () => {
     switch (currentStep) {
       case 1:
@@ -220,6 +287,18 @@ const SurveyLayout = () => {
             (score.isChecked &&
               score.test_score !== null &&
               score.test_name !== "")
+        )
+      case 3:
+        return (
+          applications.length > 0 &&
+          applications.every(
+            application =>
+              application.college_name.trim() !== "" &&
+              application.offer_status !== "" &&
+              application.major !== ""
+          ) &&
+          surveyFormData.current_enrolled_program &&
+          surveyFormData.current_enrolled_program.trim() !== ""
         )
       default:
         return true
@@ -250,6 +329,8 @@ const SurveyLayout = () => {
           <ApplicationHistoryForm
             applications={applications}
             setApplications={setApplications}
+            surveyFormData={surveyFormData}
+            setSurveyFormData={setSurveyFormData}
           />
         )
       case 4:
@@ -271,6 +352,12 @@ const SurveyLayout = () => {
     }
   }
 
+  const handleStepClick = (stepId: number) => {
+    if (stepId <= stepCompleted + 1) {
+      setCurrentStep(stepId)
+    }
+  }
+
   return (
     <div className="flex size-full">
       <div
@@ -289,10 +376,13 @@ const SurveyLayout = () => {
             <li
               key={step.id}
               className={cn(
-                "cursor-pointer p-3 pr-10 text-right",
-                currentStep === step.id && "bg-muted/50 font-bold"
+                "p-3 pr-10 text-right",
+                currentStep === step.id && "bg-muted/50 font-bold",
+                step.id <= stepCompleted + 1
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed opacity-50"
               )}
-              onClick={() => setCurrentStep(step.id)}
+              onClick={() => handleStepClick(step.id)}
             >
               {step.name}
             </li>
@@ -315,41 +405,6 @@ const SurveyLayout = () => {
     </div>
   )
 }
-
-// const ApplicationHistoryForm = ({ formData, handleInputChange }) => {
-//   return (
-//     <form className="w-full max-w-2xl space-y-8">
-//       <div className="space-y-4">
-//       <Label className="text-base font-semibold">
-//         6. What colleges and majors have you applied to? Have you received an offer?
-//       </Label>
-//         <div className="grid grid-cols-2 gap-4">
-//           <Input
-//             type="text"
-//             placeholder="College Name"
-//             name="college_name"
-//             value={formData.college_name || ""}
-//             onChange={handleInputChange}
-//           />
-//           <Input
-//             type="text"
-//             placeholder="Major"
-//             name="major"
-//             value={formData.major || ""}
-//             onChange={handleInputChange}
-//           />
-//           <Input
-//             type="text"
-//             placeholder="Application Status"
-//             name="offer_status"
-//             value={formData.offer_status || ""}
-//             onChange={handleInputChange}
-//           />
-//         </div>
-//       </div>
-//     </form>
-//   )
-// }
 
 const ImpactFactorsForm = ({ formData, handleInputChange }) => {
   return (

@@ -78,31 +78,37 @@ export const updateSurveyResponseStep = async (
   let updateData: any = {
     step_completed: step
   }
-  if (step === 1) {
-    updateData = {
-      ...updateData,
-      application_year: stepData.application_year,
-      city: stepData.city,
-      state: stepData.state,
-      zipcode: stepData.zipcode,
-      country: stepData.country,
-      high_school_name: stepData.high_school_name,
-      high_school_gpa: stepData.high_school_gpa,
-      max_gpa: stepData.max_gpa
-    }
-  } else if (step === 2) {
-    updateData = {
-      ...updateData,
-      act_score: stepData.act_score,
-      sat_score: stepData.sat_score,
-      sat_subject_scores: stepData.sat_subject_scores,
-      ap_scores: stepData.ap_scores,
-      ib_scores: stepData.ib_scores,
-      other_test_scores: stepData.other_test_scores
-    }
-  } else {
-    updateData[getStepField(step)] = stepData
-  }
+  // if (step === 1) {
+  //   updateData = {
+  //     ...updateData,
+  //     application_year: stepData.application_year,
+  //     city: stepData.city,
+  //     state: stepData.state,
+  //     zipcode: stepData.zipcode,
+  //     country: stepData.country,
+  //     high_school_name: stepData.high_school_name,
+  //     high_school_gpa: stepData.high_school_gpa,
+  //     max_gpa: stepData.max_gpa
+  //   }
+  // } else if (step === 2) {
+  //   updateData = {
+  //     ...updateData,
+  //     act_score: stepData.act_score,
+  //     sat_score: stepData.sat_score,
+  //     sat_subject_scores: stepData.sat_subject_scores,
+  //     ap_scores: stepData.ap_scores,
+  //     ib_scores: stepData.ib_scores,
+  //     other_test_scores: stepData.other_test_scores
+  //   }
+  // } else if (step === 3) {
+  //   updateData = {
+  //     ...updateData,
+  //     application_history: stepData
+  //   }
+  // }
+  //  else {
+  //   updateData[getStepField(step)] = stepData
+  // }
   const { data: updatedSurveyResponse, error } = await supabase
     .from("survey_responses")
     .update(updateData)
@@ -141,17 +147,17 @@ export const deleteSurveyResponse = async (surveyId: string) => {
   return true
 }
 
-// Function to get or create a survey response for a user
-export const getOrCreateSurveyResponse = async (userId: string) => {
-  console.log("this is user id - " + userId)
-  let surveyResponse = await getSurveyResponseByUserId(userId)
+// // Function to get or create a survey response for a user
+// export const getOrCreateSurveyResponse = async (userId: string) => {
+//   console.log("this is user id - " + userId)
+//   let surveyResponse = await getSurveyResponseByUserId(userId)
 
-  if (!surveyResponse) {
-    surveyResponse = await createSurveyResponse({ user_id: userId })
-  }
+//   if (!surveyResponse) {
+//     surveyResponse = await createSurveyResponse({ user_id: userId })
+//   }
 
-  return surveyResponse
-}
+//   return surveyResponse
+// }
 
 // Test Scores Functions
 
@@ -285,12 +291,11 @@ export const addOrUpdateTestScore = async (
 }
 
 export const addOrUpdateCollegeApplication = async (
-  surveyId: string,
   application: TablesInsert<"college_applications">
 ) => {
   const { data, error } = await supabase
     .from("college_applications")
-    .upsert({ ...application, survey_id: surveyId })
+    .upsert(application)
     .select()
     .single()
 

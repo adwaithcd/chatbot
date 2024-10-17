@@ -122,7 +122,7 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
       <Button
         type="button"
         onClick={handleAddNewTest}
-        variant="outline"
+        variant="ghost"
         className="mt-4"
         disabled={isAddNewTestDisabled()}
       >

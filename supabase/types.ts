@@ -1355,6 +1355,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           zipcode: string | null
+          current_enrolled_program: string | null
         }
         Insert: {
           application_year?: number | null
@@ -1370,6 +1371,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           zipcode?: string | null
+          current_enrolled_program: string | null
         }
         Update: {
           application_year?: number | null
@@ -1385,6 +1387,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           zipcode?: string | null
+          current_enrolled_program: string | null
         }
         Relationships: [
           {

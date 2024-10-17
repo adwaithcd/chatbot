@@ -10,6 +10,7 @@ export interface SurveyForm {
   max_gpa?: number | null
   zipcode?: string | null
   country?: string | null
+  current_enrolled_program?: string | null
 }
 
 export interface TestScore {

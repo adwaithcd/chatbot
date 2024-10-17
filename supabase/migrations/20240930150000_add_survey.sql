@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   high_school_name TEXT,
   high_school_gpa NUMERIC(3,2),
   max_gpa NUMERIC(3,2),
+  current_enrolled_program TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
