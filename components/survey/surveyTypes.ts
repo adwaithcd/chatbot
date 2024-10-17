@@ -24,5 +24,5 @@ export interface CollegeApplications {
   application_id: string
   college_name: string
   major: string | null
-  offer_status: string
+  offer_status: string | null
 }
