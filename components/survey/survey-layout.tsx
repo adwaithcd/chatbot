@@ -18,10 +18,16 @@ import {
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
 import { v4 as uuidv4 } from "uuid"
-import { CollegeApplications, SurveyForm, TestScore } from "./surveyTypes"
+import {
+  CollegeApplications,
+  ImpactFactors,
+  SurveyForm,
+  TestScore
+} from "./surveyTypes"
 import BackgroundForm from "./steps/background-form"
 import TestScoresForm from "./steps/test-score-form"
 import ApplicationHistoryForm from "./steps/application-history-form"
+import ImpactFactorsForm from "./steps/impact-factors-form"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -50,11 +56,13 @@ const SurveyLayout = () => {
     max_gpa: null,
     zipcode: null,
     country: null,
-    current_enrolled_program: null
+    current_enrolled_program: null,
+    reason_for_choosing_asu: null
   })
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([])
   const [applications, setApplications] = useState<CollegeApplications[]>([])
+  const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
@@ -76,7 +84,8 @@ const SurveyLayout = () => {
               max_gpa: surveyResponse.max_gpa,
               zipcode: surveyResponse.zipcode,
               country: surveyResponse.country,
-              current_enrolled_program: surveyResponse.current_enrolled_program
+              current_enrolled_program: surveyResponse.current_enrolled_program,
+              reason_for_choosing_asu: surveyResponse.reason_for_choosing_asu
             })
             setSurveyId(surveyResponse.survey_id)
             setStepCompleted(surveyResponse.step_completed)
@@ -106,7 +115,8 @@ const SurveyLayout = () => {
                     application_id: application.application_id,
                     college_name: application.college_name,
                     major: application.major,
-                    offer_status: application.offer_status
+                    offer_status: application.offer_status,
+                    isSaved: true
                   }))
                 )
               } else {
@@ -115,7 +125,8 @@ const SurveyLayout = () => {
                     application_id: uuidv4(),
                     college_name: "",
                     major: "",
-                    offer_status: "Offer received"
+                    offer_status: "Offer received",
+                    isSaved: false
                   }
                 ])
               }
@@ -149,7 +160,9 @@ const SurveyLayout = () => {
             await upsertSurveyResponse({
               ...surveyFormData,
               current_enrolled_program:
-                surveyFormData.current_enrolled_program ?? null
+                surveyFormData.current_enrolled_program ?? null,
+              reason_for_choosing_asu:
+                surveyFormData.reason_for_choosing_asu ?? null
             })
             await initializeTestScores()
             break
@@ -162,7 +175,9 @@ const SurveyLayout = () => {
             await upsertSurveyResponse({
               ...surveyFormData,
               current_enrolled_program:
-                surveyFormData.current_enrolled_program ?? null
+                surveyFormData.current_enrolled_program ?? null,
+              reason_for_choosing_asu:
+                surveyFormData.reason_for_choosing_asu ?? null
             })
             break
           case 4:
@@ -245,7 +260,8 @@ const SurveyLayout = () => {
           application_id: application.application_id,
           college_name: application.college_name,
           major: application.major,
-          offer_status: application.offer_status
+          offer_status: application.offer_status,
+          isSaved: true
         }))
       )
     } else {
@@ -254,7 +270,8 @@ const SurveyLayout = () => {
           application_id: uuidv4(),
           college_name: "",
           major: "",
-          offer_status: "Offer received"
+          offer_status: "Offer received",
+          isSaved: false
         }
       ])
     }
@@ -262,11 +279,22 @@ const SurveyLayout = () => {
 
   const updateApplications = async () => {
     for (const application of applications) {
-      await addOrUpdateCollegeApplication({
-        ...application,
-        survey_id: surveyId
-      })
+      const { isSaved, ...applicationToUpdate } = application
+      try {
+        await addOrUpdateCollegeApplication({
+          ...applicationToUpdate,
+          survey_id: surveyFormData.survey_id
+        })
+      } catch (error) {
+        console.error(
+          `Error updating application ${application.application_id}:`,
+          error
+        )
+      }
     }
+
+    // After all updates, mark all applications as saved in the state
+    setApplications(applications.map(app => ({ ...app, isSaved: true })))
   }
 
   const isStepComplete = () => {
@@ -336,8 +364,10 @@ const SurveyLayout = () => {
       case 4:
         return (
           <ImpactFactorsForm
-            formData={surveyFormData}
-            handleInputChange={handleInputChange}
+            surveyFormData={surveyFormData}
+            setSurveyFormData={setSurveyFormData}
+            impactFactors={impactFactors}
+            setImpactFactors={setImpactFactors}
           />
         )
       case 5:
@@ -406,25 +436,25 @@ const SurveyLayout = () => {
   )
 }
 
-const ImpactFactorsForm = ({ formData, handleInputChange }) => {
-  return (
-    <form className="w-full max-w-2xl space-y-8">
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
-          Describe the factors that had the most impact on your college
-          applications:
-        </Label>
-        <textarea
-          className="h-32 w-full rounded border p-2"
-          name="impact_factors"
-          value={formData.impact_factors || ""}
-          onChange={handleInputChange}
-          placeholder="Describe impact factors..."
-        />
-      </div>
-    </form>
-  )
-}
+// const ImpactFactorsForm = ({ formData, handleInputChange }) => {
+//   return (
+//     <form className="w-full max-w-2xl space-y-8">
+//       <div className="space-y-4">
+//         <Label className="text-base font-semibold">
+//           Describe the factors that had the most impact on your college
+//           applications:
+//         </Label>
+//         <textarea
+//           className="h-32 w-full rounded border p-2"
+//           name="impact_factors"
+//           value={formData.impact_factors || ""}
+//           onChange={handleInputChange}
+//           placeholder="Describe impact factors..."
+//         />
+//       </div>
+//     </form>
+//   )
+// }
 
 const ChallengesForm = ({ formData, handleInputChange }) => {
   return (

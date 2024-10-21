@@ -11,6 +11,8 @@ export interface SurveyForm {
   zipcode?: string | null
   country?: string | null
   current_enrolled_program?: string | null
+  financial_support?: string | null
+  reason_for_choosing_asu?: string | null
 }
 
 export interface TestScore {
@@ -26,4 +28,12 @@ export interface CollegeApplications {
   college_name: string
   major: string | null
   offer_status: string | null
+  isSaved: boolean
+}
+
+export interface ImpactFactors {
+  impact_factor_id: string
+  impact_factor: string
+  is_important: boolean | null
+  rank: number | null
 }

@@ -1346,48 +1346,51 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          current_enrolled_program: string | null
           high_school_gpa: number | null
           high_school_name: string | null
           max_gpa: number | null
+          reason_for_choosing_asu: string | null
           state: string | null
           step_completed: number
           survey_id: string
           updated_at: string | null
           user_id: string
           zipcode: string | null
-          current_enrolled_program: string | null
         }
         Insert: {
           application_year?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
+          current_enrolled_program?: string | null
           high_school_gpa?: number | null
           high_school_name?: string | null
           max_gpa?: number | null
+          reason_for_choosing_asu?: string | null
           state?: string | null
           step_completed?: number
           survey_id?: string
           updated_at?: string | null
           user_id: string
           zipcode?: string | null
-          current_enrolled_program: string | null
         }
         Update: {
           application_year?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
+          current_enrolled_program?: string | null
           high_school_gpa?: number | null
           high_school_name?: string | null
           max_gpa?: number | null
+          reason_for_choosing_asu?: string | null
           state?: string | null
           step_completed?: number
           survey_id?: string
           updated_at?: string | null
           user_id?: string
           zipcode?: string | null
-          current_enrolled_program: string | null
         }
         Relationships: [
           {
