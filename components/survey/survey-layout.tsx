@@ -326,7 +326,9 @@ const SurveyLayout = () => {
               application.major !== ""
           ) &&
           surveyFormData.current_enrolled_program &&
-          surveyFormData.current_enrolled_program.trim() !== ""
+          surveyFormData.current_enrolled_program.trim() !== "" &&
+          surveyFormData.reason_for_choosing_asu &&
+          surveyFormData.reason_for_choosing_asu.trim() !== ""
         )
       default:
         return true

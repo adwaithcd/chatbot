@@ -1347,6 +1347,7 @@ export type Database = {
           country: string | null
           created_at: string
           current_enrolled_program: string | null
+          financial_support_details: string | null
           high_school_gpa: number | null
           high_school_name: string | null
           max_gpa: number | null
@@ -1364,6 +1365,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           current_enrolled_program?: string | null
+          financial_support_details?: string | null
           high_school_gpa?: number | null
           high_school_name?: string | null
           max_gpa?: number | null
@@ -1381,6 +1383,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           current_enrolled_program?: string | null
+          financial_support_details?: string | null
           high_school_gpa?: number | null
           high_school_name?: string | null
           max_gpa?: number | null
