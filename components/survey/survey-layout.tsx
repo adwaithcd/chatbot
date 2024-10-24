@@ -57,12 +57,63 @@ const SurveyLayout = () => {
     zipcode: null,
     country: null,
     current_enrolled_program: null,
-    reason_for_choosing_asu: null
+    reason_for_choosing_asu: null,
+    financial_support_details: null
   })
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([])
   const [applications, setApplications] = useState<CollegeApplications[]>([])
-  const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([])
+  const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Academic Programs",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Campus Culture",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Location",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Admission Probability",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Cost and Financial Aid",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Extracurricular Activities",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    },
+    {
+      impact_factor_id: uuidv4(),
+      impact_factor: "Career Opportunities and Job placement",
+      is_important: null,
+      rank: null,
+      user_added_factor: false
+    }
+  ])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
@@ -85,7 +136,9 @@ const SurveyLayout = () => {
               zipcode: surveyResponse.zipcode,
               country: surveyResponse.country,
               current_enrolled_program: surveyResponse.current_enrolled_program,
-              reason_for_choosing_asu: surveyResponse.reason_for_choosing_asu
+              reason_for_choosing_asu: surveyResponse.reason_for_choosing_asu,
+              financial_support_details:
+                surveyResponse.financial_support_details
             })
             setSurveyId(surveyResponse.survey_id)
             setStepCompleted(surveyResponse.step_completed)
@@ -329,6 +382,12 @@ const SurveyLayout = () => {
           surveyFormData.current_enrolled_program.trim() !== "" &&
           surveyFormData.reason_for_choosing_asu &&
           surveyFormData.reason_for_choosing_asu.trim() !== ""
+        )
+      case 4:
+        return (
+          surveyFormData.financial_support_details &&
+          surveyFormData.financial_support_details.trim() !== "" &&
+          impactFactors.some(factor => factor.is_important === true)
         )
       default:
         return true

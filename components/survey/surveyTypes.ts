@@ -11,7 +11,7 @@ export interface SurveyForm {
   zipcode?: string | null
   country?: string | null
   current_enrolled_program?: string | null
-  financial_support?: string | null
+  financial_support_details?: string | null
   reason_for_choosing_asu?: string | null
 }
 
@@ -36,4 +36,5 @@ export interface ImpactFactors {
   impact_factor: string
   is_important: boolean | null
   rank: number | null
+  user_added_factor: boolean
 }

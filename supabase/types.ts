@@ -811,6 +811,44 @@ export type Database = {
           },
         ]
       }
+      impact_factors: {
+        Row: {
+          created_at: string
+          impact_factor: string
+          impact_factor_id: string
+          is_important: boolean | null
+          rank: number | null
+          survey_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          impact_factor: string
+          impact_factor_id?: string
+          is_important?: boolean | null
+          rank?: number | null
+          survey_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          impact_factor?: string
+          impact_factor_id?: string
+          is_important?: boolean | null
+          rank?: number | null
+          survey_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impact_factors_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
+            referencedColumns: ["survey_id"]
+          },
+        ]
+      }
       message_file_items: {
         Row: {
           created_at: string
