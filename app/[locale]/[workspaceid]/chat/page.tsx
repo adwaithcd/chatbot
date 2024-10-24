@@ -11,6 +11,12 @@ import { ChatbotUIContext } from "@/context/context"
 import useHotkey from "@/lib/hooks/use-hotkey"
 import { useTheme } from "next-themes"
 import { useContext, useEffect, useRef, useState } from "react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip"
 
 interface ApiResponse {
   output: {
@@ -79,7 +85,7 @@ export default function ChatPage() {
         const data: ApiResponse = await response.json()
 
         const questions = [
-          data.output["question 1"],
+          data.output["question 1"] + " " + data.output["question 4"],
           data.output["question 2"],
           data.output["question 3"]
         ]
@@ -114,6 +120,26 @@ export default function ChatPage() {
                     ))
                   : // Display fetched prompts
                     recommendedPrompts.slice(0, 3).map((prompt, index) => (
+                      <TooltipProvider key={index}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className="bg-secondary flex h-32 cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                              onClick={() => recommendedPromptClick(prompt)}
+                            >
+                              <p className="line-clamp-3 overflow-hidden text-ellipsis">
+                                {prompt}
+                              </p>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs bg-white p-2 text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                            {prompt}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+
+                {/* recommendedPrompts.slice(0, 3).map((prompt, index) => (
                       <div
                         key={index}
                         className="bg-secondary flex h-32 cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -126,7 +152,7 @@ export default function ChatPage() {
                           {prompt}
                         </p>
                       </div>
-                    ))}
+                    ))}*/}
               </div>
             </div>
           </div>
