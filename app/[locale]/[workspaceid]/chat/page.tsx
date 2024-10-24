@@ -109,20 +109,22 @@ export default function ChatPage() {
                   ? [...Array(3)].map((_, index) => (
                       <div
                         key={index}
-                        className="bg-secondary flex min-h-[120px] animate-pulse items-center justify-center rounded-lg p-6"
+                        className="bg-secondary flex h-32 animate-pulse items-center justify-center rounded-lg p-6"
                       />
                     ))
                   : // Display fetched prompts
                     recommendedPrompts.slice(0, 3).map((prompt, index) => (
                       <div
                         key={index}
-                        className="bg-secondary flex min-h-[120px] cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        className="bg-secondary flex h-32 cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                         onClick={() => {
                           // You might want to add logic here to pre-fill the input with the selected prompt
                           recommendedPromptClick(prompt)
                         }}
                       >
-                        <p>{prompt}</p>
+                        <p className="line-clamp-4 overflow-hidden text-ellipsis">
+                          {prompt}
+                        </p>
                       </div>
                     ))}
               </div>
