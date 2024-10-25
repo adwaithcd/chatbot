@@ -46,7 +46,8 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
     setSelectedTools,
     setChats,
     setUserInput,
-    chatMessages
+    chatMessages,
+    isGenerating
   } = useContext(ChatbotUIContext)
 
   const { handleNewChat, handleFocusChatInput, handleSendMessage } =
@@ -111,6 +112,15 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
     const userMessage = findLastUserMessage(chatMessages)
     setLastUserMessage(userMessage)
   }, [chatMessages])
+
+  useEffect(() => {
+    if (!isGenerating && lastUserMessage) {
+      // Small delay to ensure recommendations are rendered
+      setTimeout(() => {
+        scrollToBottom()
+      }, 100)
+    }
+  }, [isGenerating, lastUserMessage])
 
   const fetchMessages = async () => {
     const fetchedMessages = await getMessagesByChatId(params.chatid as string)
@@ -304,7 +314,7 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
           <ChatMessages />
         </div>
 
-        {lastUserMessage && (
+        {lastUserMessage && !isGenerating && (
           <ChatRecommendations
             onRecommendationClick={handleRecommendationClick}
             lastUserMessage={lastUserMessage}
