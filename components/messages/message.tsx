@@ -12,10 +12,11 @@ import {
   IconFileText,
   IconMoodSmile,
   IconPencil,
-  IconX
+  IconX,
+  IconUserCircle
 } from "@tabler/icons-react"
 import Image from "next/image"
-import { FC, useContext, useEffect, useRef, useState } from "react"
+import { FC, useContext, useEffect, useRef, useState, memo } from "react"
 import { ModelIcon } from "../models/model-icon"
 import { Button } from "../ui/button"
 import { FileIcon } from "../ui/file-icon"
@@ -30,6 +31,29 @@ import { useTheme } from "next-themes"
 import { updateMessage } from "@/db/messages"
 
 const ICON_SIZE = 32
+
+const ProfileImage = memo(({ imageUrl }: { imageUrl: string }) => {
+  if (!imageUrl)
+    return (
+      <IconUserCircle
+        className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
+        size={ICON_SIZE}
+      />
+    )
+
+  return (
+    <Image
+      className="size-[32px] rounded"
+      src={imageUrl}
+      height={32}
+      width={32}
+      alt="user image"
+      priority={false}
+      loading="lazy"
+    />
+  )
+})
+ProfileImage.displayName = "ProfileImage"
 
 interface MessageProps {
   message: Tables<"messages">
@@ -443,20 +467,7 @@ export const Message: FC<MessageProps> = ({
 
         <div className={cn("shrink-0", isUser ? "ml-3" : "mr-3 py-2")}>
           {isUser ? (
-            profile?.image_url ? (
-              <Image
-                className="size-[32px] rounded"
-                src={profile?.image_url}
-                height={32}
-                width={32}
-                alt="user image"
-              />
-            ) : (
-              <IconMoodSmile
-                className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
-                size={ICON_SIZE}
-              />
-            )
+            <ProfileImage imageUrl={profile?.image_url || ""} />
           ) : (
             <UilRobot
               className="bg-primary text-secondary border-primary rounded border-DEFAULT p-1"
@@ -777,3 +788,4 @@ export const Message: FC<MessageProps> = ({
     </div>
   )
 }
+Message.displayName = "Message"
