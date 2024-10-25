@@ -22,6 +22,7 @@ import { ChatSecondaryButtons } from "./chat-secondary-buttons"
 import { UilEditAlt } from "@iconscout/react-unicons"
 import { Input } from "@/components/ui/input"
 import { IconEdit, IconCheck } from "@tabler/icons-react"
+import ChatRecommendations from "./chat-recommendations"
 
 interface ChatUIProps {}
 
@@ -43,10 +44,13 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
     setShowFilesDisplay,
     setUseRetrieval,
     setSelectedTools,
-    setChats
+    setChats,
+    setUserInput,
+    chatMessages
   } = useContext(ChatbotUIContext)
 
-  const { handleNewChat, handleFocusChatInput } = useChatHandler()
+  const { handleNewChat, handleFocusChatInput, handleSendMessage } =
+    useChatHandler()
 
   const {
     messagesStartRef,
@@ -63,6 +67,7 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState("")
+  const [lastUserMessage, setLastUserMessage] = useState<string>()
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -89,6 +94,23 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
       inputRef.current?.focus()
     }
   }, [isEditing])
+
+  // Update last user message when switching chats or when messages change
+  useEffect(() => {
+    if (chatMessages.length === 0) return
+
+    const findLastUserMessage = (messages: typeof chatMessages) => {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].message.role === "user") {
+          return messages[i].message.content
+        }
+      }
+      return undefined
+    }
+
+    const userMessage = findLastUserMessage(chatMessages)
+    setLastUserMessage(userMessage)
+  }, [chatMessages])
 
   const fetchMessages = async () => {
     const fetchedMessages = await getMessagesByChatId(params.chatid as string)
@@ -214,6 +236,11 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
     setIsEditing(false)
   }
 
+  const handleRecommendationClick = (prompt: string) => {
+    setUserInput(prompt)
+    handleSendMessage(prompt, chatMessages, false)
+  }
+
   if (loading) {
     return <Loading />
   }
@@ -277,8 +304,22 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
           <ChatMessages />
         </div>
 
+        {lastUserMessage && (
+          <ChatRecommendations
+            onRecommendationClick={handleRecommendationClick}
+            lastUserMessage={lastUserMessage}
+          />
+        )}
+
         <div ref={messagesEndRef} />
       </div>
+
+      {/* <ChatRecommendations
+        isVisible={showRecommendations}
+        onRecommendationClick={handleRecommendationClick}
+        lastUserMessage={lastUserMessage}
+        variant="compact"
+      /> */}
 
       <div className="relative w-full min-w-[300px] items-end px-2 pb-3 pt-0 sm:w-[600px] sm:pb-8 sm:pt-5 md:w-[700px] lg:w-[700px] xl:w-[800px]">
         <ChatInput />

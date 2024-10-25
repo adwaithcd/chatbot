@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
   try {
+    const { message } = await req.json()
+    const promptText = message
+      ? message
+      : "Give some sample questions which might be useful to a student for college application?"
     const response = await fetch(
       "http://demo-d-Publi-NU2RRqsuaVm7-500183766.us-east-1.elb.amazonaws.com/prompt_recs/invoke",
       {
@@ -11,8 +15,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           input: {
-            question:
-              "Give some sample questions which might be useful to a student?"
+            question: promptText
           }
         })
       }

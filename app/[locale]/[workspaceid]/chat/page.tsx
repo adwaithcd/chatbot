@@ -75,7 +75,8 @@ export default function ChatPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
-          }
+          },
+          body: JSON.stringify({})
         })
 
         if (!response.ok) {
@@ -85,7 +86,7 @@ export default function ChatPage() {
         const data: ApiResponse = await response.json()
 
         const questions = [
-          data.output["question 1"] + " " + data.output["question 4"],
+          data.output["question 1"],
           data.output["question 2"],
           data.output["question 3"]
         ]
@@ -105,29 +106,28 @@ export default function ChatPage() {
     <>
       {chatMessages.length === 0 ? (
         <>
-          <div className="absolute left-1/2 top-1/2 flex w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col items-center px-4">
+          <div className="absolute left-1/2 top-1/2 flex w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col items-center">
             <div className="mb-10">
               <Brand theme={theme === "dark" ? "dark" : "light"} />
             </div>
-            <div className="w-full">
+            <div className="mx-auto w-full max-w-3xl">
               <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {isLoadingPrompts
                   ? [...Array(3)].map((_, index) => (
                       <div
                         key={index}
-                        className="bg-secondary flex h-32 animate-pulse items-center justify-center rounded-lg p-6"
+                        className="bg-secondary flex h-32 animate-pulse items-start justify-start rounded-lg p-6"
                       />
                     ))
-                  : // Display fetched prompts
-                    recommendedPrompts.slice(0, 3).map((prompt, index) => (
+                  : recommendedPrompts.slice(0, 3).map((prompt, index) => (
                       <TooltipProvider key={index}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div
-                              className="bg-secondary flex h-32 cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                              className="bg-secondary/50 hover:bg-secondary h-28 items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
                               onClick={() => recommendedPromptClick(prompt)}
                             >
-                              <p className="line-clamp-3 overflow-hidden text-ellipsis">
+                              <p className="line-clamp-3 overflow-hidden">
                                 {prompt}
                               </p>
                             </div>
