@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +20,26 @@ const ChatRecommendations = ({
 }: ChatRecommendationsProps) => {
   const [recommendations, setRecommendations] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const textRefs = useRef<(HTMLParagraphElement | null)[]>([])
+  const [overflowStates, setOverflowStates] = useState<boolean[]>([])
+
+  const checkOverflow = () => {
+    if (!isLoading) {
+      const newOverflowStates = textRefs.current.map(ref => {
+        if (ref) {
+          return ref.scrollHeight > ref.clientHeight
+        }
+        return false
+      })
+      setOverflowStates(newOverflowStates)
+    }
+  }
+
+  useEffect(() => {
+    checkOverflow()
+    window.addEventListener("resize", checkOverflow)
+    return () => window.removeEventListener("resize", checkOverflow)
+  }, [isLoading, recommendations])
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -60,7 +80,7 @@ const ChatRecommendations = ({
   }, [lastUserMessage])
 
   return (
-    <div className={cn("mx-auto w-full max-w-[800px] px-4 py-3", className)}>
+    <div className={cn("mx-auto w-full max-w-3xl px-2 py-3", className)}>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {isLoading
           ? [...Array(3)].map((_, index) => (
@@ -75,16 +95,19 @@ const ChatRecommendations = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onRecommendationClick(recommendation)}
-                      className="bg-secondary/50 hover:bg-secondary h-16 items-center justify-center overflow-hidden rounded-lg p-2 text-center text-sm transition-colors duration-200"
+                      className="bg-secondary/100 hover:bg-secondary h-16 items-center justify-center overflow-hidden rounded-lg p-2 text-center text-sm transition-colors duration-200"
                     >
-                      <p className="line-clamp-2 overflow-hidden">
+                      <p
+                        ref={el => (textRefs.current[index] = el)}
+                        className="line-clamp-2 overflow-hidden text-ellipsis"
+                      >
                         {recommendation}
                       </p>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent
                     side="top"
-                    className="max-w-xs bg-white p-2 text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100"
+                    className={`max-w-xs p-2 text-sm ${!overflowStates[index] ? "hidden" : ""}`}
                   >
                     {recommendation}
                   </TooltipContent>
