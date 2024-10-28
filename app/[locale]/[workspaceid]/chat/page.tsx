@@ -102,6 +102,27 @@ export default function ChatPage() {
     fetchRecommendedPrompts()
   }, [chatMessages.length])
 
+  const textRefs = useRef<(HTMLParagraphElement | null)[]>([])
+  const [overflowStates, setOverflowStates] = useState<boolean[]>([])
+
+  const checkOverflow = () => {
+    if (!isLoadingPrompts) {
+      const newOverflowStates = textRefs.current.map(ref => {
+        if (ref) {
+          return ref.scrollHeight > ref.clientHeight
+        }
+        return false
+      })
+      setOverflowStates(newOverflowStates)
+    }
+  }
+
+  useEffect(() => {
+    checkOverflow()
+    window.addEventListener("resize", checkOverflow)
+    return () => window.removeEventListener("resize", checkOverflow)
+  }, [isLoadingPrompts, recommendedPrompts])
+
   return (
     <>
       {chatMessages.length === 0 ? (
@@ -124,35 +145,25 @@ export default function ChatPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div
-                              className="bg-secondary/50 hover:bg-secondary h-28 items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
+                              className="bg-secondary/100 hover:bg-secondary h-28 cursor-pointer items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
                               onClick={() => recommendedPromptClick(prompt)}
                             >
-                              <p className="line-clamp-3 overflow-hidden">
+                              <p
+                                ref={el => (textRefs.current[index] = el)}
+                                className="line-clamp-3 overflow-hidden text-ellipsis"
+                              >
                                 {prompt}
                               </p>
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent className="max-w-xs bg-white p-2 text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                          <TooltipContent
+                            className={`max-w-xs p-2 text-sm ${!overflowStates[index] ? "hidden" : ""}`}
+                          >
                             {prompt}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     ))}
-
-                {/* recommendedPrompts.slice(0, 3).map((prompt, index) => (
-                      <div
-                        key={index}
-                        className="bg-secondary flex h-32 cursor-pointer items-center justify-center rounded-lg p-6 text-center shadow-md transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                        onClick={() => {
-                          // You might want to add logic here to pre-fill the input with the selected prompt
-                          recommendedPromptClick(prompt)
-                        }}
-                      >
-                        <p className="line-clamp-4 overflow-hidden text-ellipsis">
-                          {prompt}
-                        </p>
-                      </div>
-                    ))}*/}
               </div>
             </div>
           </div>
@@ -164,9 +175,6 @@ export default function ChatPage() {
               <ChatInput />
             </div>
           </div>
-          {/* <div className="absolute bottom-2 right-2 hidden md:block lg:bottom-4 lg:right-4">
-            <ChatHelp />
-          </div> */}
         </>
       ) : (
         <ChatUI />
