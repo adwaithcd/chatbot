@@ -271,36 +271,36 @@ export const ChatUI: FC<ChatUIProps> = ({}) => {
         <ChatSecondaryButtons />
       </div>
 
-      <div className="bg-secondary flex max-h-[50px] min-h-[50px] w-full items-center justify-center border-b-2 font-bold">
-        <div className="flex w-full max-w-[600px] items-center justify-center px-4">
-          {isEditing ? (
-            <div className="flex w-full max-w-[500px] items-center">
-              <Input
-                ref={inputRef}
-                value={editedName}
-                onChange={e => setEditedName(e.target.value)}
-                onBlur={handleSaveName}
-                className="w-full px-2 py-1 text-center text-lg"
-              />
-              <IconCheck
-                className="ml-2 cursor-pointer hover:opacity-50"
-                size={24}
-                onClick={handleSaveName}
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <span className="max-w-[500px] truncate">
+      <div className="bg-secondary flex max-h-[50px] min-h-[50px] w-full items-center justify-center border-b-2">
+        {isEditing ? (
+          <div className="flex w-[calc(100%-120px)] max-w-[500px] items-center justify-center px-4 sm:w-[calc(100%-160px)]">
+            <Input
+              ref={inputRef}
+              value={editedName}
+              onChange={e => setEditedName(e.target.value)}
+              onBlur={handleSaveName}
+              className="w-full px-2 py-1 text-center text-lg"
+            />
+            <IconCheck
+              className="ml-2 shrink-0 cursor-pointer hover:opacity-50"
+              size={24}
+              onClick={handleSaveName}
+            />
+          </div>
+        ) : (
+          <div className="flex w-[calc(100%-120px)] items-center justify-center px-4 sm:w-[calc(100%-160px)]">
+            <div className="flex max-w-full items-center justify-center">
+              <span className="max-w-[160px] truncate text-center font-bold sm:max-w-[260px] md:max-w-[400px]">
                 {selectedChat?.name || "Chat"}
               </span>
               <UilEditAlt
-                className="ml-2 cursor-pointer hover:opacity-50"
+                className="ml-2 shrink-0 cursor-pointer hover:opacity-50"
                 size={20}
                 onClick={handleEditClick}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div
