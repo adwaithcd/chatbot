@@ -95,7 +95,7 @@ const ChatRecommendations = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onRecommendationClick(recommendation)}
-                      className="bg-secondary/100 hover:bg-secondary h-16 items-center justify-center overflow-hidden rounded-lg p-2 text-center text-sm transition-colors duration-200"
+                      className="bg-secondary/100 hover:bg-secondary h-16 items-center justify-center overflow-hidden rounded-lg p-3 text-start text-sm transition-colors duration-200"
                     >
                       <p
                         ref={el => (textRefs.current[index] = el)}
