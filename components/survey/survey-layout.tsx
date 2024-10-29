@@ -13,7 +13,9 @@ import {
   upsertSurveyResponse,
   deleteTestScore,
   getCollegeApplications,
-  addOrUpdateCollegeApplication
+  addOrUpdateCollegeApplication,
+  addOrUpdateImpactFactor,
+  getImpactFactors
 } from "@/db/survey-responses"
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
@@ -39,6 +41,58 @@ const steps = [
 
 const DEFAULT_TESTS = ["ACT", "SAT", "AP", "IB"]
 
+const DEFAULT_IMPACT_FACTORS: ImpactFactors[] = [
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Academic Programs",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Campus Culture",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Location",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Admission Probability",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Cost and Financial Aid",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Extracurricular Activities",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  },
+  {
+    impact_factor_id: uuidv4(),
+    impact_factor: "Career Opportunities and Job placement",
+    is_important: null,
+    rank: null,
+    user_added_factor: false
+  }
+]
+
 const SurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
@@ -63,57 +117,7 @@ const SurveyLayout = () => {
   const [surveyId, setSurveyId] = useState("")
   const [testScores, setTestScores] = useState<TestScore[]>([])
   const [applications, setApplications] = useState<CollegeApplications[]>([])
-  const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Academic Programs",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Campus Culture",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Location",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Admission Probability",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Cost and Financial Aid",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Extracurricular Activities",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    },
-    {
-      impact_factor_id: uuidv4(),
-      impact_factor: "Career Opportunities and Job placement",
-      is_important: null,
-      rank: null,
-      user_added_factor: false
-    }
-  ])
+  const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
@@ -184,12 +188,40 @@ const SurveyLayout = () => {
                 ])
               }
             }
+
+            if (surveyResponse.step_completed >= 3) {
+              try {
+                const savedFactors = await getImpactFactors(
+                  surveyResponse.survey_id
+                )
+
+                if (savedFactors && savedFactors.length > 0) {
+                  // If there are saved factors, use them with user_added_factor false
+                  setImpactFactors(
+                    savedFactors.map(factor => ({
+                      ...factor,
+                      user_added_factor: false
+                    }))
+                  )
+                } else {
+                  // No saved factors, use defaults
+                  setImpactFactors(DEFAULT_IMPACT_FACTORS)
+                }
+              } catch (error) {
+                console.error("Error fetching impact factors:", error)
+                setImpactFactors(DEFAULT_IMPACT_FACTORS)
+              }
+            } else {
+              // Not at step 4 yet, use defaults
+              setImpactFactors(DEFAULT_IMPACT_FACTORS)
+            }
           } else {
             setSurveyId(surveyFormData.survey_id)
             setSurveyFormData(prevData => ({
               ...prevData,
               user_id: profile.user_id
             }))
+            setImpactFactors(DEFAULT_IMPACT_FACTORS)
           }
         } catch (error) {
           console.error("Error fetching survey data:", error)
@@ -234,7 +266,30 @@ const SurveyLayout = () => {
             })
             break
           case 4:
-            // await updateImpactFactors(surveyId, formData.impact_factors);
+            await upsertSurveyResponse({
+              ...surveyFormData,
+              financial_support_details:
+                surveyFormData.financial_support_details ?? null
+            })
+            // Handle impact factors
+            for (const factor of impactFactors) {
+              // Skip user-added factors that weren't categorized
+              if (factor.user_added_factor && factor.is_important === null) {
+                if (factor.impact_factor_id) {
+                  // await deleteImpactFactor(factor.impact_factor_id)
+                }
+                continue
+              }
+
+              // Upsert each impact factor
+              await addOrUpdateImpactFactor({
+                impact_factor_id: factor.impact_factor_id,
+                survey_id: surveyId,
+                impact_factor: factor.impact_factor,
+                is_important: factor.is_important,
+                rank: factor.rank
+              })
+            }
             break
           case 5:
             // await updateChallenges(surveyId, formData.challenges);
@@ -384,11 +439,15 @@ const SurveyLayout = () => {
           surveyFormData.reason_for_choosing_asu.trim() !== ""
         )
       case 4:
-        return (
+        const hasFinancialDetails =
           surveyFormData.financial_support_details &&
-          surveyFormData.financial_support_details.trim() !== "" &&
-          impactFactors.some(factor => factor.is_important === true)
-        )
+          surveyFormData.financial_support_details.trim() !== ""
+
+        // Check if all default factors have been categorized
+        const allDefaultFactorsCategorized = impactFactors
+          .filter(factor => !factor.user_added_factor)
+          .every(factor => factor.is_important !== null)
+        return hasFinancialDetails && allDefaultFactorsCategorized
       default:
         return true
     }

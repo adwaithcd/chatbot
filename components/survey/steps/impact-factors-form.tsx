@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
 
 interface ImpactFactorsFormProps {
   surveyFormData: SurveyForm
@@ -20,45 +19,127 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
   setImpactFactors
 }) => {
   const [newFactor, setNewFactor] = useState("")
+  const [draggedItemRank, setDraggedItemRank] = useState<number | null>(null)
 
-  const handleDragStart = (e: React.DragEvent<HTMLElement>, id: string) => {
+  const handleDragStart = (
+    e: React.DragEvent<HTMLElement>,
+    id: string,
+    rank: number | null
+  ) => {
     e.dataTransfer.setData("impact_factor_id", id)
+    setDraggedItemRank(rank)
   }
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault()
   }
 
-  const handleDropOnImportant = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
+  const reorderRanks = (factors: ImpactFactors[]): ImpactFactors[] => {
+    const importantFactors = factors
+      .filter(f => f.is_important)
+      .sort((a, b) => (a.rank || 0) - (b.rank || 0))
 
-    const target = e.target as Element
+    return factors.map(factor => {
+      if (!factor.is_important) return factor
+      const newRank =
+        importantFactors.findIndex(
+          f => f.impact_factor_id === factor.impact_factor_id
+        ) + 1
+      return { ...factor, rank: newRank }
+    })
+  }
+
+  const handleDropOnImportant = (
+    e: React.DragEvent<HTMLElement>,
+    dropIndex?: number
+  ) => {
+    e.preventDefault()
     const itemId = e.dataTransfer.getData("impact_factor_id")
-    console.log(itemId)
 
-    setImpactFactors(prev =>
-      prev.map(factor =>
-        factor.impact_factor_id === itemId
-          ? { ...factor, is_important: true }
-          : factor
-      )
-    )
+    setImpactFactors(prev => {
+      let updatedFactors = [...prev]
+      const droppedItem = prev.find(f => f.impact_factor_id === itemId)
+
+      if (!droppedItem) return prev
+
+      // If it's a new item being added to important section
+      if (!droppedItem.is_important) {
+        // If dropping at a specific index
+        if (typeof dropIndex === "number") {
+          // Update the dropped item
+          updatedFactors = updatedFactors.map(factor => {
+            if (factor.impact_factor_id === itemId) {
+              return { ...factor, is_important: true, rank: dropIndex + 1 }
+            }
+            // Shift other items' ranks
+            if (factor.is_important && factor.rank && factor.rank > dropIndex) {
+              return { ...factor, rank: factor.rank + 1 }
+            }
+            return factor
+          })
+        } else {
+          // Dropping in the general area (add to end)
+          const maxRank = Math.max(
+            ...prev.filter(f => f.is_important).map(f => f.rank || 0),
+            0
+          )
+          updatedFactors = updatedFactors.map(factor =>
+            factor.impact_factor_id === itemId
+              ? { ...factor, is_important: true, rank: maxRank + 1 }
+              : factor
+          )
+        }
+      } else {
+        // Reordering existing important items
+        if (typeof dropIndex === "number") {
+          const oldRank = droppedItem.rank || 0
+          const newRank = dropIndex + 1
+
+          updatedFactors = updatedFactors.map(factor => {
+            if (factor.impact_factor_id === itemId) {
+              return { ...factor, rank: newRank }
+            }
+            if (factor.is_important && factor.rank) {
+              if (oldRank < newRank) {
+                if (factor.rank > oldRank && factor.rank <= newRank) {
+                  return { ...factor, rank: factor.rank - 1 }
+                }
+              } else if (oldRank > newRank) {
+                if (factor.rank >= newRank && factor.rank < oldRank) {
+                  return { ...factor, rank: factor.rank + 1 }
+                }
+              }
+            }
+            return factor
+          })
+        }
+      }
+
+      return reorderRanks(updatedFactors)
+    })
   }
 
   const handleDropOnUnimportant = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
-
-    const target = e.target as Element
     const itemId = e.dataTransfer.getData("impact_factor_id")
-    console.log(itemId)
 
-    setImpactFactors(prev =>
-      prev.map(factor =>
-        factor.impact_factor_id === itemId
-          ? { ...factor, is_important: false }
-          : factor
-      )
-    )
+    setImpactFactors(prev => {
+      let updatedFactors = prev.map(factor => {
+        if (factor.impact_factor_id === itemId) {
+          return { ...factor, is_important: false, rank: null }
+        }
+        return factor
+      })
+
+      return reorderRanks(updatedFactors)
+    })
+  }
+
+  const handleDropBetweenItems = (
+    e: React.DragEvent<HTMLLIElement>,
+    index: number
+  ) => {
+    handleDropOnImportant(e, index)
   }
 
   const handleFinancialSupportChange = (
@@ -70,42 +151,8 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
     }))
   }
 
-  const handleAddFactor = () => {
-    if (newFactor.trim()) {
-      setImpactFactors(prev => [
-        ...prev,
-        {
-          impact_factor_id: uuidv4(),
-          impact_factor: newFactor.trim(),
-          is_important: null,
-          rank: null,
-          user_added_factor: true
-        }
-      ])
-      setNewFactor("")
-    }
-  }
-
-  // const onDragEnd = result => {
-  //   if (!result.destination) return
-
-  //   const items = Array.from(impactFactors)
-  //   const [reorderedItem] = items.splice(result.source.index, 1)
-  //   items.splice(result.destination.index, 0, reorderedItem)
-
-  //   const updatedItems = items.map((item, index) => ({
-  //     ...item,
-  //     is_important:
-  //       result.destination.droppableId === "important"
-  //         ? true
-  //         : result.destination.droppableId === "unimportant"
-  //           ? false
-  //           : null,
-  //     rank: result.destination.droppableId === "important" ? index + 1 : null
-  //   }))
-
-  //   setImpactFactors(updatedItems)
-  // }
+  const factorItemClasses =
+    "rounded-md border p-3 mb-2 hover:border-gray-400 cursor-grab active:cursor-grabbing shadow-sm"
 
   return (
     <div className="w-full max-w-2xl space-y-8">
@@ -123,21 +170,70 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
         />
       </div>
 
+      <button onClick={() => console.log(impactFactors)}>test</button>
+
       <div className="space-y-2">
         <Label className="text-base font-semibold">
           9. What are your top priorities when choosing a college?
         </Label>
-        {/* <div className="flex space-x-2">
-          <Input
-            value={newFactor}
-            onChange={e => setNewFactor(e.target.value)}
-            placeholder="Add a new factor"
-          />
-          <Button onClick={handleAddFactor}>Add</Button>
-        </div> */}
       </div>
 
       <div className="flex gap-6">
+        <div className="w-1/2 space-y-4">
+          <h3 className="mb-4 font-semibold">
+            Drag and rank the important factors here
+          </h3>
+          <div
+            className="bg-muted min-h-[120px] rounded-lg border p-4"
+            onDragOver={handleDragOver}
+            onDrop={e => handleDropOnImportant(e)}
+          >
+            <ul className="space-y-2">
+              {impactFactors
+                .filter(factor => factor.is_important)
+                .sort((a, b) => (a.rank || 0) - (b.rank || 0))
+                .map((factor, index) => (
+                  <li
+                    key={factor.impact_factor_id}
+                    draggable
+                    className={factorItemClasses}
+                    onDragStart={e =>
+                      handleDragStart(e, factor.impact_factor_id, factor.rank)
+                    }
+                    onDragOver={handleDragOver}
+                    onDrop={e => handleDropBetweenItems(e, index)}
+                  >
+                    {factor.rank}. {factor.impact_factor}
+                  </li>
+                ))}
+            </ul>
+          </div>
+
+          <h3 className="mb-4 font-semibold">Unimportant Factors</h3>
+          <div
+            className="bg-muted min-h-[120px] rounded-lg border p-4"
+            onDragOver={handleDragOver}
+            onDrop={handleDropOnUnimportant}
+          >
+            <ul className="space-y-2">
+              {impactFactors
+                .filter(factor => factor.is_important === false)
+                .map(factor => (
+                  <li
+                    key={factor.impact_factor_id}
+                    draggable
+                    className={factorItemClasses}
+                    onDragStart={e =>
+                      handleDragStart(e, factor.impact_factor_id, factor.rank)
+                    }
+                  >
+                    {factor.impact_factor}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        </div>
+
         <div className="w-1/2 rounded-lg p-4">
           <ul className="space-y-2">
             {impactFactors
@@ -146,165 +242,18 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
                 <li
                   key={factor.impact_factor_id}
                   draggable
-                  className="rounded p-2"
-                  onDragStart={e => {
-                    console.log(factor)
-                    handleDragStart(e, factor.impact_factor_id)
-                  }}
+                  className={factorItemClasses}
+                  onDragStart={e =>
+                    handleDragStart(e, factor.impact_factor_id, factor.rank)
+                  }
                 >
                   {factor.impact_factor}
                 </li>
               ))}
           </ul>
         </div>
-
-        <div className="w-1/2 space-y-4">
-          {/* Important Factors */}
-          <h3 className="mb-4 font-semibold">
-            Drag and rank the important factors here
-          </h3>
-          <div
-            className="bg-muted min-h-[120px] rounded-lg border p-4"
-            onDragOver={handleDragOver}
-            onDrop={handleDropOnImportant}
-          >
-            {/* Important factors will go here */}
-
-            <ul>
-              {impactFactors
-                .filter(factor => factor.is_important)
-                .map(factor => (
-                  <li
-                    key={factor.impact_factor_id}
-                    draggable
-                    className="rounded p-2"
-                  >
-                    {factor.impact_factor}
-                  </li>
-                ))}
-            </ul>
-          </div>
-
-          {/* Unimportant Factors */}
-          <h3 className="mb-4 font-semibold">Unimportant Factors</h3>
-          <div
-            className="bg-muted min-h-[120px] rounded-lg border p-4"
-            onDragOver={handleDragOver}
-          >
-            <div
-              className="bg-muted min-h-[120px] rounded-lg border p-4"
-              onDragOver={handleDragOver}
-              onDrop={handleDropOnUnimportant}
-            >
-              {/* Important factors will go here */}
-
-              <ul>
-                {impactFactors
-                  .filter(factor => factor.is_important === false)
-                  .map(factor => (
-                    <li
-                      key={factor.impact_factor_id}
-                      draggable
-                      className="rounded p-2"
-                    >
-                      {factor.impact_factor}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-            {/* Important factors will go here */}
-          </div>
-        </div>
       </div>
     </div>
-    // {/* <DragDropContext onDragEnd={onDragEnd}>
-    //   <div className="flex space-x-4">
-    //     <Droppable droppableId="important">
-    //       {(provided) => (
-    //         <div
-    //           {...provided.droppableProps}
-    //           ref={provided.innerRef}
-    //           className="w-1/3 min-h-[200px] p-4 border rounded"
-    //         >
-    //           <h3 className="font-semibold mb-2">Important Factors</h3>
-    //           {impactFactors
-    //             .filter((factor) => factor.is_important === true)
-    //             .map((factor, index) => (
-    //               <Draggable key={factor.impact_factor_id} draggableId={factor.impact_factor_id} index={index}>
-    //                 {(provided) => (
-    //                   <div
-    //                     ref={provided.innerRef}
-    //                     {...provided.draggableProps}
-    //                     {...provided.dragHandleProps}
-    //                     className="bg-white p-2 mb-2 rounded shadow"
-    //                   >
-    //                     {factor.impact_factor}
-    //                   </div>
-    //                 )}
-    //               </Draggable>
-    //             ))}
-    //           {provided.placeholder}
-    //         </div>
-    //       )}
-    //     </Droppable>
-    //     <Droppable droppableId="unimportant">
-    //       {(provided) => (
-    //         <div
-    //           {...provided.droppableProps}
-    //           ref={provided.innerRef}
-    //           className="w-1/3 min-h-[200px] p-4 border rounded"
-    //         >
-    //           <h3 className="font-semibold mb-2">Unimportant Factors</h3>
-    //           {impactFactors
-    //             .filter((factor) => factor.is_important === false)
-    //             .map((factor, index) => (
-    //               <Draggable key={factor.impact_factor_id} draggableId={factor.impact_factor_id} index={index}>
-    //                 {(provided) => (
-    //                   <div
-    //                     ref={provided.innerRef}
-    //                     {...provided.draggableProps}
-    //                     {...provided.dragHandleProps}
-    //                     className="bg-white p-2 mb-2 rounded shadow"
-    //                   >
-    //                     {factor.impact_factor}
-    //                   </div>
-    //                 )}
-    //               </Draggable>
-    //             ))}
-    //           {provided.placeholder}
-    //         </div>
-    //       )}
-    //     </Droppable>
-    //     <Droppable droppableId="available">
-    //       {(provided) => (
-    //         <div
-    //           {...provided.droppableProps}
-    //           ref={provided.innerRef}
-    //           className="w-1/3 min-h-[200px] p-4 border rounded"
-    //         >
-    //           <h3 className="font-semibold mb-2">Available Factors</h3>
-    //           {impactFactors
-    //             .filter((factor) => factor.is_important === null)
-    //             .map((factor, index) => (
-    //               <Draggable key={factor.impact_factor_id} draggableId={factor.impact_factor_id} index={index}>
-    //                 {(provided) => (
-    //                   <div
-    //                     ref={provided.innerRef}
-    //                     {...provided.draggableProps}
-    //                     {...provided.dragHandleProps}
-    //                     className="bg-white p-2 mb-2 rounded shadow"
-    //                   >
-    //                     {factor.impact_factor}
-    //                   </div>
-    //                 )}
-    //               </Draggable>
-    //             ))}
-    //           {provided.placeholder}
-    //         </div>
-    //       )}
-    //     </Droppable>
-    //   </div>
-    // </DragDropContext> */}
   )
 }
 

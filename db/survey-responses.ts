@@ -302,3 +302,29 @@ export const addOrUpdateCollegeApplication = async (
   if (error) throw new Error(error.message)
   return data
 }
+
+export const getImpactFactors = async (surveyId: string) => {
+  const { data: impactFactors, error } = await supabase
+    .from("impact_factors")
+    .select("*")
+    .eq("survey_id", surveyId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return impactFactors
+}
+
+export const addOrUpdateImpactFactor = async (
+  factorData: TablesInsert<"impact_factors">
+) => {
+  const { data, error } = await supabase
+    .from("impact_factors")
+    .upsert(factorData)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
