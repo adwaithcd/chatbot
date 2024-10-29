@@ -22,6 +22,7 @@ const ChatRecommendations = ({
   const [isLoading, setIsLoading] = useState(true)
   const textRefs = useRef<(HTMLParagraphElement | null)[]>([])
   const [overflowStates, setOverflowStates] = useState<boolean[]>([])
+  const previousMessageRef = useRef<string>()
 
   const checkOverflow = () => {
     if (!isLoading) {
@@ -43,7 +44,14 @@ const ChatRecommendations = ({
 
   useEffect(() => {
     const fetchRecommendations = async () => {
+      // Skip if the message is the same as the previous one
+      if (lastUserMessage === previousMessageRef.current || !lastUserMessage) {
+        return
+      }
+
       setIsLoading(true)
+      previousMessageRef.current = lastUserMessage
+
       try {
         const response = await fetch("/api/prompt-recommendations", {
           method: "POST",
