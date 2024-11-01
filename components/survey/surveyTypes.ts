@@ -38,3 +38,15 @@ export interface ImpactFactors {
   rank: number | null
   user_added_factor: boolean
 }
+
+export interface ApplicationChallenge {
+  challenge_id: string
+  challenge: string
+  isChecked: boolean
+}
+
+export interface ApplicationOutcomeFactor {
+  factor_id: string
+  factor: string
+  isChecked: boolean
+}

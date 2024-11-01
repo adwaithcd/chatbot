@@ -328,3 +328,69 @@ export const addOrUpdateImpactFactor = async (
   if (error) throw new Error(error.message)
   return data
 }
+
+export const getApplicationChallenges = async (surveyId: string) => {
+  const { data: challenges, error } = await supabase
+    .from("application_challenges")
+    .select("*")
+    .eq("survey_id", surveyId)
+
+  if (error) throw new Error(error.message)
+  return challenges
+}
+
+export const getApplicationOutcomeFactors = async (surveyId: string) => {
+  const { data: factors, error } = await supabase
+    .from("application_outcome_factors")
+    .select("*")
+    .eq("survey_id", surveyId)
+
+  if (error) throw new Error(error.message)
+  return factors
+}
+
+export const addOrUpdateChallenge = async (
+  challenge: TablesInsert<"application_challenges">
+) => {
+  const { data, error } = await supabase
+    .from("application_challenges")
+    .upsert(challenge)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export const addOrUpdateOutcomeFactor = async (
+  factor: TablesInsert<"application_outcome_factors">
+) => {
+  const { data, error } = await supabase
+    .from("application_outcome_factors")
+    .upsert(factor)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export const deleteChallenge = async (challengeId: string) => {
+  const { error } = await supabase
+    .from("application_challenges")
+    .delete()
+    .eq("challenge_id", challengeId)
+
+  if (error) throw new Error(error.message)
+  return true
+}
+
+export const deleteOutcomeFactor = async (factorId: string) => {
+  const { error } = await supabase
+    .from("application_outcome_factors")
+    .delete()
+    .eq("factor_id", factorId)
+
+  if (error) throw new Error(error.message)
+  return true
+}

@@ -34,6 +34,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_challenges: {
+        Row: {
+          challenge: string
+          challenge_id: string
+          created_at: string
+          survey_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          challenge: string
+          challenge_id?: string
+          created_at?: string
+          survey_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          challenge?: string
+          challenge_id?: string
+          created_at?: string
+          survey_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_challenges_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
+            referencedColumns: ["survey_id"]
+          },
+        ]
+      }
+      application_outcome_factors: {
+        Row: {
+          created_at: string
+          factor: string
+          factor_id: string
+          survey_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          factor: string
+          factor_id?: string
+          survey_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          factor?: string
+          factor_id?: string
+          survey_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_outcome_factors_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "survey_responses"
+            referencedColumns: ["survey_id"]
+          },
+        ]
+      }
       assistant_collections: {
         Row: {
           assistant_id: string

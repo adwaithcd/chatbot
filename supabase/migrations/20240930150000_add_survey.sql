@@ -50,10 +50,31 @@ CREATE TABLE IF NOT EXISTS impact_factors (
   updated_at TIMESTAMPTZ
 );
 
+-- Application Challenges Table
+CREATE TABLE IF NOT EXISTS application_challenges (
+  challenge_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  survey_id UUID NOT NULL REFERENCES survey_responses(survey_id) ON DELETE CASCADE,
+  challenge TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ
+);
+
+-- Application Outcome Factors Table
+CREATE TABLE IF NOT EXISTS application_outcome_factors (
+  factor_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  survey_id UUID NOT NULL REFERENCES survey_responses(survey_id) ON DELETE CASCADE,
+  factor TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ
+);
+
+
 -- Indexes
 CREATE INDEX idx_test_scores_survey_id ON test_scores (survey_id);
 CREATE INDEX idx_college_applications_survey_id ON college_applications (survey_id);
 CREATE INDEX idx_impact_factors_survey_id ON impact_factors (survey_id);
+CREATE INDEX idx_application_challenges_survey_id ON application_challenges (survey_id);
+CREATE INDEX idx_application_outcome_factors_survey_id ON application_outcome_factors (survey_id);
 
 -- RLS
 ALTER TABLE survey_responses ENABLE ROW LEVEL SECURITY;
@@ -77,6 +98,17 @@ CREATE POLICY "Allow full access to own impact factors"
 ON impact_factors
 USING (survey_id IN (SELECT survey_id FROM survey_responses WHERE user_id = auth.uid()));
 
+ALTER TABLE application_challenges ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow full access to own application challenges"
+ON application_challenges
+USING (survey_id IN (SELECT survey_id FROM survey_responses WHERE user_id = auth.uid()));
+
+ALTER TABLE application_outcome_factors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow full access to own application outcome factors"
+ON application_outcome_factors
+USING (survey_id IN (SELECT survey_id FROM survey_responses WHERE user_id = auth.uid()));
+
+
 -- Triggers
 CREATE TRIGGER update_survey_responses_updated_at
 BEFORE UPDATE ON survey_responses
@@ -95,5 +127,15 @@ EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_impact_factors_updated_at
 BEFORE UPDATE ON impact_factors
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_application_challenges_updated_at
+BEFORE UPDATE ON application_challenges
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_application_outcome_factors_updated_at
+BEFORE UPDATE ON application_outcome_factors
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();

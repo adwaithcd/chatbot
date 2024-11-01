@@ -15,12 +15,20 @@ import {
   getCollegeApplications,
   addOrUpdateCollegeApplication,
   addOrUpdateImpactFactor,
-  getImpactFactors
+  getImpactFactors,
+  getApplicationChallenges,
+  getApplicationOutcomeFactors,
+  addOrUpdateChallenge,
+  addOrUpdateOutcomeFactor,
+  deleteChallenge,
+  deleteOutcomeFactor
 } from "@/db/survey-responses"
 import { cn } from "@/lib/utils"
 import Loading from "@/app/[locale]/loading"
 import { v4 as uuidv4 } from "uuid"
 import {
+  ApplicationChallenge,
+  ApplicationOutcomeFactor,
   CollegeApplications,
   ImpactFactors,
   SurveyForm,
@@ -30,6 +38,7 @@ import BackgroundForm from "./steps/background-form"
 import TestScoresForm from "./steps/test-score-form"
 import ApplicationHistoryForm from "./steps/application-history-form"
 import ImpactFactorsForm from "./steps/impact-factors-form"
+import ChallengesForm from "./steps/application-challenges-form"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -93,6 +102,72 @@ const DEFAULT_IMPACT_FACTORS: ImpactFactors[] = [
   }
 ]
 
+const DEFAULT_CHALLENGES: ApplicationChallenge[] = [
+  {
+    challenge_id: uuidv4(),
+    challenge: "Understanding the application requirements",
+    isChecked: false
+  },
+  {
+    challenge_id: uuidv4(),
+    challenge: "Choosing the right college",
+    isChecked: false
+  },
+  {
+    challenge_id: uuidv4(),
+    challenge: "Choosing the right major/program",
+    isChecked: false
+  },
+  {
+    challenge_id: uuidv4(),
+    challenge: "Financial aid and scholarships",
+    isChecked: false
+  },
+  {
+    challenge_id: uuidv4(),
+    challenge: "Meeting deadlines",
+    isChecked: false
+  },
+  {
+    challenge_id: uuidv4(),
+    challenge: "Writing personal statements/essays",
+    isChecked: false
+  }
+]
+
+const DEFAULT_FACTORS: ApplicationOutcomeFactor[] = [
+  {
+    factor_id: uuidv4(),
+    factor: "Academic performance (GPA)",
+    isChecked: false
+  },
+  {
+    factor_id: uuidv4(),
+    factor: "Standardized test scores",
+    isChecked: false
+  },
+  {
+    factor_id: uuidv4(),
+    factor: "Extracurricular activities",
+    isChecked: false
+  },
+  {
+    factor_id: uuidv4(),
+    factor: "Personal statements/essays",
+    isChecked: false
+  },
+  {
+    factor_id: uuidv4(),
+    factor: "Letters of recommendation",
+    isChecked: false
+  },
+  {
+    factor_id: uuidv4(),
+    factor: "Interview performance",
+    isChecked: false
+  }
+]
+
 const SurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
@@ -118,6 +193,13 @@ const SurveyLayout = () => {
   const [testScores, setTestScores] = useState<TestScore[]>([])
   const [applications, setApplications] = useState<CollegeApplications[]>([])
   const [impactFactors, setImpactFactors] = useState<ImpactFactors[]>([])
+
+  const [challenges, setChallenges] = useState<ApplicationChallenge[]>([
+    ...DEFAULT_CHALLENGES
+  ])
+  const [factors, setFactors] = useState<ApplicationOutcomeFactor[]>([
+    ...DEFAULT_FACTORS
+  ])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
@@ -196,7 +278,7 @@ const SurveyLayout = () => {
                 )
 
                 if (savedFactors && savedFactors.length > 0) {
-                  // If there are saved factors, use them with user_added_factor false
+                  // If there are saved factors, use them with user_added_factor false - here no extra check as all factors are saved at once
                   setImpactFactors(
                     savedFactors.map(factor => ({
                       ...factor,
@@ -215,6 +297,81 @@ const SurveyLayout = () => {
               // Not at step 4 yet, use defaults
               setImpactFactors(DEFAULT_IMPACT_FACTORS)
             }
+
+            if (surveyResponse.step_completed >= 4) {
+              const savedChallenges = await getApplicationChallenges(
+                surveyResponse.survey_id
+              )
+              const savedFactors = await getApplicationOutcomeFactors(
+                surveyResponse.survey_id
+              )
+
+              // Update challenges
+              setChallenges(prev => {
+                // Start with default challenges, but update their IDs if they exist in DB
+                const updatedChallenges = DEFAULT_CHALLENGES.map(
+                  defaultChallenge => {
+                    const savedChallenge = savedChallenges.find(
+                      sc => sc.challenge === defaultChallenge.challenge
+                    )
+
+                    return {
+                      challenge_id:
+                        savedChallenge?.challenge_id ||
+                        defaultChallenge.challenge_id,
+                      challenge: defaultChallenge.challenge,
+                      isChecked: savedChallenge ? true : false
+                    }
+                  }
+                )
+
+                // Add any additional custom challenges from DB
+                const customChallenges = savedChallenges
+                  .filter(
+                    sc =>
+                      !DEFAULT_CHALLENGES.some(
+                        dc => dc.challenge === sc.challenge
+                      )
+                  )
+                  .map(sc => ({
+                    challenge_id: sc.challenge_id,
+                    challenge: sc.challenge,
+                    isChecked: true
+                  }))
+
+                return [...updatedChallenges, ...customChallenges]
+              })
+
+              // Update factors
+              setFactors(prev => {
+                // Start with default factors, but update their IDs if they exist in DB
+                const updatedFactors = DEFAULT_FACTORS.map(defaultFactor => {
+                  const savedFactor = savedFactors.find(
+                    sf => sf.factor === defaultFactor.factor
+                  )
+
+                  return {
+                    factor_id:
+                      savedFactor?.factor_id || defaultFactor.factor_id,
+                    factor: defaultFactor.factor,
+                    isChecked: savedFactor ? true : false
+                  }
+                })
+
+                // Add any additional custom factors from DB
+                const customFactors = savedFactors
+                  .filter(
+                    sf => !DEFAULT_FACTORS.some(df => df.factor === sf.factor)
+                  )
+                  .map(sf => ({
+                    factor_id: sf.factor_id,
+                    factor: sf.factor,
+                    isChecked: true
+                  }))
+
+                return [...updatedFactors, ...customFactors]
+              })
+            }
           } else {
             setSurveyId(surveyFormData.survey_id)
             setSurveyFormData(prevData => ({
@@ -232,10 +389,6 @@ const SurveyLayout = () => {
     }
     fetchSurveyResponse()
   }, [profile])
-
-  const handleInputChange = e => {
-    setSurveyFormData({ ...surveyFormData, [e.target.name]: e.target.value })
-  }
 
   const handleNextStep = async () => {
     if (surveyId && isStepComplete()) {
@@ -292,7 +445,36 @@ const SurveyLayout = () => {
             }
             break
           case 5:
-            // await updateChallenges(surveyId, formData.challenges);
+            try {
+              // Handle challenges, if unchecked, delete from DB
+              for (const challenge of challenges) {
+                if (challenge.isChecked) {
+                  await addOrUpdateChallenge({
+                    challenge_id: challenge.challenge_id,
+                    survey_id: surveyId,
+                    challenge: challenge.challenge
+                  })
+                } else {
+                  await deleteChallenge(challenge.challenge_id)
+                }
+              }
+
+              // Handle factors
+              for (const factor of factors) {
+                if (factor.isChecked) {
+                  await addOrUpdateOutcomeFactor({
+                    factor_id: factor.factor_id,
+                    survey_id: surveyId,
+                    factor: factor.factor
+                  })
+                } else {
+                  await deleteOutcomeFactor(factor.factor_id)
+                }
+              }
+            } catch (error) {
+              console.error("Error updating challenges and factors:", error)
+            }
+
             break
         }
         // Only update stepCompleted if we're moving to a new step
@@ -448,6 +630,19 @@ const SurveyLayout = () => {
           factor => factor.is_important !== null
         )
         return hasFinancialDetails && allDefaultFactorsCategorized
+      case 5:
+        return (
+          challenges.every(
+            challenge =>
+              !challenge.isChecked ||
+              (challenge.isChecked && challenge.challenge.trim() !== "")
+          ) &&
+          factors.every(
+            factor =>
+              !factor.isChecked ||
+              (factor.isChecked && factor.factor.trim() !== "")
+          )
+        )
       default:
         return true
     }
@@ -493,8 +688,12 @@ const SurveyLayout = () => {
       case 5:
         return (
           <ChallengesForm
-            formData={surveyFormData}
-            handleInputChange={handleInputChange}
+            challenges={challenges}
+            setChallenges={setChallenges}
+            factors={factors}
+            setFactors={setFactors}
+            defaultChallenges={DEFAULT_CHALLENGES}
+            defaultFactors={DEFAULT_FACTORS}
           />
         )
       default:
@@ -549,49 +748,10 @@ const SurveyLayout = () => {
           onClick={handleNextStep}
           disabled={!isStepComplete()}
         >
-          Next
+          {currentStep === 5 ? "Submit" : "Next"}
         </Button>
       </div>
     </div>
-  )
-}
-
-// const ImpactFactorsForm = ({ formData, handleInputChange }) => {
-//   return (
-//     <form className="w-full max-w-2xl space-y-8">
-//       <div className="space-y-4">
-//         <Label className="text-base font-semibold">
-//           Describe the factors that had the most impact on your college
-//           applications:
-//         </Label>
-//         <textarea
-//           className="h-32 w-full rounded border p-2"
-//           name="impact_factors"
-//           value={formData.impact_factors || ""}
-//           onChange={handleInputChange}
-//           placeholder="Describe impact factors..."
-//         />
-//       </div>
-//     </form>
-//   )
-// }
-
-const ChallengesForm = ({ formData, handleInputChange }) => {
-  return (
-    <form className="w-full max-w-2xl space-y-8">
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
-          Describe any challenges you faced during the application process:
-        </Label>
-        <textarea
-          className="h-32 w-full rounded border p-2"
-          name="challenges"
-          value={formData.challenges || ""}
-          onChange={handleInputChange}
-          placeholder="Describe challenges..."
-        />
-      </div>
-    </form>
   )
 }
 
