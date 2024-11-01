@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
+import { X, Check } from "lucide-react"
 
 interface ImpactFactorsFormProps {
   surveyFormData: SurveyForm
@@ -19,6 +20,7 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
   setImpactFactors
 }) => {
   const [newFactor, setNewFactor] = useState("")
+  const [isAddingNewFactor, setIsAddingNewFactor] = useState(false)
   const [draggedItemRank, setDraggedItemRank] = useState<number | null>(null)
 
   const handleDragStart = (
@@ -166,6 +168,41 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
     }))
   }
 
+  const addNewFactor = () => {
+    if (newFactor.trim()) {
+      const newFactorItem: ImpactFactors = {
+        impact_factor_id: uuidv4(),
+        impact_factor: newFactor.trim(),
+        is_important: null,
+        rank: null,
+        user_added_factor: true
+      }
+      setImpactFactors(prev => [...prev, newFactorItem])
+      setNewFactor("")
+      setIsAddingNewFactor(false)
+    } else {
+      setIsAddingNewFactor(false)
+    }
+  }
+
+  const handleAddNewFactorKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault()
+      addNewFactor()
+    } else if (e.key === "Escape") {
+      setIsAddingNewFactor(false)
+      setNewFactor("")
+    }
+  }
+
+  const handleDeleteFactor = (factorId: string) => {
+    setImpactFactors(prev =>
+      prev.filter(factor => factor.impact_factor_id !== factorId)
+    )
+  }
+
   const factorItemClasses =
     "rounded-md border p-3 mb-2 hover:border-gray-400 cursor-grab active:cursor-grabbing shadow-sm"
 
@@ -259,18 +296,55 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
                 <li
                   key={factor.impact_factor_id}
                   draggable
-                  className={factorItemClasses}
+                  className={`${factorItemClasses} relative pr-8`}
                   onDragStart={e =>
                     handleDragStart(e, factor.impact_factor_id, factor.rank)
                   }
                 >
                   {factor.impact_factor}
+                  {factor.user_added_factor && (
+                    <button
+                      onClick={() =>
+                        handleDeleteFactor(factor.impact_factor_id)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </li>
               ))}
           </ul>
-          <Button type="button" variant="ghost" className="size-12 ">
-            + Add a new factor
-          </Button>
+          {isAddingNewFactor ? (
+            <div className="mt-4 flex items-center gap-2">
+              <Input
+                value={newFactor}
+                onChange={e => setNewFactor(e.target.value)}
+                onKeyDown={handleAddNewFactorKeyDown}
+                onBlur={addNewFactor}
+                placeholder="Enter new factor"
+                className="flex-1"
+                autoFocus
+              />
+              <Button
+                onClick={addNewFactor}
+                size="icon"
+                variant="ghost"
+                className="size-8"
+                disabled={!newFactor.trim()}
+              >
+                <Check size={16} />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={() => setIsAddingNewFactor(true)}
+              variant="ghost"
+              className="mt-4"
+            >
+              + Add a new factor
+            </Button>
+          )}
         </div>
       </div>
     </div>

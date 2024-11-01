@@ -443,10 +443,10 @@ const SurveyLayout = () => {
           surveyFormData.financial_support_details &&
           surveyFormData.financial_support_details.trim() !== ""
 
-        // Check if all default factors have been categorized
-        const allDefaultFactorsCategorized = impactFactors
-          .filter(factor => !factor.user_added_factor)
-          .every(factor => factor.is_important !== null)
+        // Check if all factors have been categorized
+        const allDefaultFactorsCategorized = impactFactors.every(
+          factor => factor.is_important !== null
+        )
         return hasFinancialDetails && allDefaultFactorsCategorized
       default:
         return true
