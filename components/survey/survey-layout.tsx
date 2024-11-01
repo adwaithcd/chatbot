@@ -509,7 +509,7 @@ const SurveyLayout = () => {
   }
 
   return (
-    <div className="flex size-full">
+    <div className="flex h-screen w-full overflow-hidden">
       <div
         className="flex h-full flex-col"
         style={{
@@ -539,7 +539,7 @@ const SurveyLayout = () => {
           ))}
         </ul>
       </div>
-      <div className="bg-muted/50 relative flex size-full flex-col items-center p-8">
+      <div className="bg-muted/50 relative flex size-full flex-col items-center overflow-y-auto p-8">
         {/* <h1 className="mb-10 text-2xl font-bold">
           Step {currentStep}: {steps[currentStep - 1]?.name}
         </h1> */}
