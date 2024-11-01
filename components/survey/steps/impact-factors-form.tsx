@@ -142,6 +142,21 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
     handleDropOnImportant(e, index)
   }
 
+  const handleDropOnImpactFactors = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const itemId = e.dataTransfer.getData("impact_factor_id")
+
+    setImpactFactors(prev => {
+      let updatedFactors = prev.map(factor => {
+        if (factor.impact_factor_id === itemId) {
+          return { ...factor, is_important: null, rank: null }
+        }
+        return factor
+      })
+      return reorderRanks(updatedFactors)
+    })
+  }
+
   const handleFinancialSupportChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -169,8 +184,6 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
           className="max-w-sm"
         />
       </div>
-
-      <button onClick={() => console.log(impactFactors)}>test</button>
 
       <div className="space-y-2">
         <Label className="text-base font-semibold">
@@ -234,7 +247,11 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
           </div>
         </div>
 
-        <div className="w-1/2 rounded-lg p-4">
+        <div
+          className="w-1/2 rounded-lg p-4"
+          onDragOver={handleDragOver}
+          onDrop={handleDropOnImpactFactors}
+        >
           <ul className="space-y-2">
             {impactFactors
               .filter(factor => factor.is_important === null)
@@ -251,6 +268,9 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
                 </li>
               ))}
           </ul>
+          <Button type="button" variant="ghost" className="size-12 ">
+            + Add a new factor
+          </Button>
         </div>
       </div>
     </div>
