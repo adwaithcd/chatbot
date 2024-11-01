@@ -204,13 +204,13 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
   }
 
   const factorItemClasses =
-    "rounded-md border p-3 mb-2 hover:border-gray-400 cursor-grab active:cursor-grabbing shadow-sm"
+    "rounded-md border p-2 mb-2 hover:border-gray-400 cursor-grab active:cursor-grabbing shadow-sm"
 
   return (
     <div className="w-full max-w-2xl space-y-8">
       <div className="space-y-2">
         <Label htmlFor="financial_support" className="text-base font-semibold">
-          8. Among the offers you have received, what kinds of financial support
+          9. Among the offers you have received, what kinds of financial support
           have you been granted? For example: scholarship, tuition waiver,
           financial aid, stipend.
         </Label>
@@ -224,7 +224,7 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
 
       <div className="space-y-2">
         <Label className="text-base font-semibold">
-          9. What are your top priorities when choosing a college?
+          10. What are your top priorities when choosing a college?
         </Label>
       </div>
 
