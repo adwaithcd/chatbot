@@ -238,7 +238,7 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
             onDragOver={handleDragOver}
             onDrop={e => handleDropOnImportant(e)}
           >
-            <ul className="space-y-2">
+            <ul className="list-decimal space-y-2 pl-5">
               {impactFactors
                 .filter(factor => factor.is_important)
                 .sort((a, b) => (a.rank || 0) - (b.rank || 0))
@@ -253,21 +253,21 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
                     onDragOver={handleDragOver}
                     onDrop={e => handleDropBetweenItems(e, index)}
                   >
-                    {factor.rank}. {factor.impact_factor}
+                    {factor.impact_factor}
                   </li>
                 ))}
             </ul>
           </div>
 
           <h3 className="mb-4 font-semibold">
-            Drag the Unimportant Factors here
+            Drag the unimportant Factors here
           </h3>
           <div
             className="bg-muted min-h-[120px] rounded-lg border p-4"
             onDragOver={handleDragOver}
             onDrop={handleDropOnUnimportant}
           >
-            <ul className="space-y-2">
+            <ul className="list-disc space-y-2 pl-5">
               {impactFactors
                 .filter(factor => factor.is_important === false)
                 .map(factor => (
