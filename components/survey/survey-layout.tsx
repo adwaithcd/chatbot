@@ -738,10 +738,7 @@ const SurveyLayout = () => {
           ))}
         </ul>
       </div>
-      <div className="bg-muted/50 relative flex size-full flex-col items-center overflow-y-auto p-8">
-        {/* <h1 className="mb-10 text-2xl font-bold">
-          Step {currentStep}: {steps[currentStep - 1]?.name}
-        </h1> */}
+      {/* <div className="bg-muted/50 relative flex size-full flex-col items-center overflow-y-auto p-8">
         {renderStepContent()}
         <Button
           className="absolute bottom-8 right-8"
@@ -750,6 +747,16 @@ const SurveyLayout = () => {
         >
           {currentStep === 5 ? "Submit" : "Next"}
         </Button>
+      </div> */}
+      <div className="bg-muted/50 relative h-full flex-1">
+        <div className="flex h-full flex-col items-center overflow-y-auto p-8 pb-24">
+          {renderStepContent()}
+        </div>
+        <div className="fixed bottom-8 right-8">
+          <Button onClick={handleNextStep} disabled={!isStepComplete()}>
+            {currentStep === 5 ? "Submit" : "Next"}
+          </Button>
+        </div>
       </div>
     </div>
   )

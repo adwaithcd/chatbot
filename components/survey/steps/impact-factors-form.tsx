@@ -259,7 +259,9 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
             </ul>
           </div>
 
-          <h3 className="mb-4 font-semibold">Unimportant Factors</h3>
+          <h3 className="mb-4 font-semibold">
+            Drag the Unimportant Factors here
+          </h3>
           <div
             className="bg-muted min-h-[120px] rounded-lg border p-4"
             onDragOver={handleDragOver}
