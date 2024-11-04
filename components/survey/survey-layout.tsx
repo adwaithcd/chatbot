@@ -210,6 +210,25 @@ const SurveyLayout = () => {
           const surveyResponse = await getSurveyResponseByUserId(
             profile.user_id
           )
+
+          if (surveyResponse && surveyResponse.step_completed === 5) {
+            // Get workspace info for redirection post survey completion
+            const { data: homeWorkspace, error } = await supabase
+              .from("workspaces")
+              .select("*")
+              .eq("user_id", profile.user_id)
+              .eq("is_home", true)
+              .single()
+
+            if (!homeWorkspace) {
+              throw new Error(error?.message || "Unable to find home workspace")
+            }
+
+            // Navigate to workspace
+            router.push(`/${homeWorkspace.id}/chat`)
+            return
+          }
+
           if (surveyResponse) {
             setSurveyFormData({
               survey_id: surveyResponse.survey_id,
