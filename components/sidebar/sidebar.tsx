@@ -78,7 +78,7 @@ export const Sidebar: FC<SidebarProps> = ({
 
   return (
     <div
-      className="flex h-full flex-col"
+      className="flex h-full flex-col transition-all duration-300 ease-in-out"
       style={{
         // Sidebar - SidebarSwitcher
         minWidth: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",

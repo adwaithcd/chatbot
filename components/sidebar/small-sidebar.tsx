@@ -37,7 +37,7 @@ const SmallSidebar: React.FC<SmallSidebarProps> = ({ onExpand }) => {
   }
 
   return (
-    <div className="flex h-full w-16 flex-col justify-between border-r ">
+    <div className="eae-in-out flex h-full w-16 flex-col justify-between border-r transition-all duration-300">
       <div className="flex flex-col items-center space-y-6 pt-6">
         <UilRobot size={SIDEBAR_ICON_SIZE + 4} />
         <Button

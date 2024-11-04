@@ -90,7 +90,9 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
       {!showSidebar && <SmallSidebar onExpand={handleToggleSidebar} />}
 
       <div
-        className={cn("duration-200 dark:border-none ")}
+        className={cn(
+          "transition-all duration-300 ease-in-out dark:border-none"
+        )}
         style={{
           // Sidebar
           minWidth: showSidebar ? `${SIDEBAR_WIDTH}px` : "0px",
