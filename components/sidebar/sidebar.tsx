@@ -93,7 +93,7 @@ export const Sidebar: FC<SidebarProps> = ({
 
           <div className="flex items-center space-x-2">
             <UilRobot scale={0.3} />
-            <span className="text-lg font-semibold">EDUCHAT</span>
+            <span className="pt-1 text-lg font-semibold">EDUCHAT</span>
           </div>
         </div>
 
