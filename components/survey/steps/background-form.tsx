@@ -3,6 +3,7 @@ import React from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SurveyForm } from "../surveyTypes"
+import { NumericFormat } from "react-number-format"
 
 interface BackgroundFormProps {
   formData: SurveyForm
@@ -19,6 +20,15 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
       ...prevData,
       [name]: value
     }))
+  }
+
+  const handleGPAChange = (value: number | null, name: string) => {
+    console.log(value)
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }))
+    console.log(formData)
   }
 
   return (
@@ -92,22 +102,51 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
           4. What is your secondary/high school GPA?
         </Label>
         <div className="ml-6 flex shrink-0 items-center space-x-2">
-          <Input
-            type="text"
+          {/* <Input
+            type="number"
             className="w-20"
             placeholder="3.0"
             name="high_school_gpa"
+            step={0.1}
             value={formData.high_school_gpa || ""}
             onChange={handleInputChange}
           />
           <span>out of</span>
           <Input
-            type="text"
+            type="number"
             className="w-20"
             placeholder="4.0"
             name="max_gpa"
+            step={0.1}
             value={formData.max_gpa || ""}
             onChange={handleInputChange}
+          /> */}
+          <NumericFormat
+            customInput={Input}
+            className="w-20"
+            placeholder="3.0"
+            value={formData.high_school_gpa ?? ""}
+            onValueChange={values => {
+              handleGPAChange(values.floatValue ?? null, "high_school_gpa")
+            }}
+            decimalScale={1}
+            fixedDecimalScale
+            allowNegative={false}
+            max={10}
+          />
+          <span>out of</span>
+          <NumericFormat
+            customInput={Input}
+            className="w-20"
+            placeholder="4.0"
+            value={formData.max_gpa ?? ""}
+            onValueChange={values => {
+              handleGPAChange(values.floatValue ?? null, "max_gpa")
+            }}
+            decimalScale={1}
+            fixedDecimalScale
+            allowNegative={false}
+            max={10}
           />
         </div>
       </div>
