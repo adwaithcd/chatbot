@@ -42,8 +42,16 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
   }
 
   const handleChallengeCheckChange = (id: string, isChecked: boolean) => {
-    setChallenges(prev =>
-      prev.map(challenge => {
+    setChallenges(prev => {
+      const challenge = prev.find(c => c.challenge_id === id)
+
+      // If unchecking and challenge is empty, remove it
+      if (!isChecked && challenge && !challenge.challenge.trim()) {
+        return prev.filter(c => c.challenge_id !== id)
+      }
+
+      // Otherwise update the checked status
+      return prev.map(challenge => {
         if (challenge.challenge_id === id) {
           return {
             ...challenge,
@@ -52,12 +60,20 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
         }
         return challenge
       })
-    )
+    })
   }
 
   const handleFactorCheckChange = (id: string, isChecked: boolean) => {
-    setFactors(prev =>
-      prev.map(factor => {
+    setFactors(prev => {
+      const factor = prev.find(f => f.factor_id === id)
+
+      // If unchecking and factor is empty, remove it
+      if (!isChecked && factor && !factor.factor.trim()) {
+        return prev.filter(f => f.factor_id !== id)
+      }
+
+      // Otherwise update the checked status
+      return prev.map(factor => {
         if (factor.factor_id === id) {
           return {
             ...factor,
@@ -66,7 +82,7 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
         }
         return factor
       })
-    )
+    })
   }
 
   const handleAddNewChallenge = () => {
