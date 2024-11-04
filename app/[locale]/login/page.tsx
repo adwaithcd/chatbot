@@ -34,6 +34,20 @@ export default async function Login({
   const session = (await supabase.auth.getSession()).data.session
 
   if (session) {
+    //check if the survey is complete, else redirect to survey
+    const { data: surveyResponse } = await supabase
+      .from("survey_responses")
+      .select("step_completed")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    if (!surveyResponse || surveyResponse.step_completed < 5) {
+      return redirect("/survey")
+    }
+
+    // if survey is complete navigate to home workspace
     const { data: homeWorkspace, error } = await supabase
       .from("workspaces")
       .select("*")
@@ -63,6 +77,19 @@ export default async function Login({
 
     if (error) {
       return redirect(`/login?message=${error.message}`)
+    }
+
+    //check if the survey is complete, else redirect to survey
+    const { data: surveyResponse } = await supabase
+      .from("survey_responses")
+      .select("step_completed")
+      .eq("user_id", data.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    if (!surveyResponse || surveyResponse.step_completed < 5) {
+      return redirect("/survey")
     }
 
     const { data: homeWorkspace, error: homeWorkspaceError } = await supabase

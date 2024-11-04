@@ -3,8 +3,6 @@ import React, { useContext, useEffect, useState } from "react"
 import { ChatbotUIContext } from "@/context/context"
 import { SIDEBAR_WIDTH } from "@/components/ui/dashboard"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   updateSurveyResponseStep,
   getTestScores,
@@ -39,6 +37,8 @@ import TestScoresForm from "./steps/test-score-form"
 import ApplicationHistoryForm from "./steps/application-history-form"
 import ImpactFactorsForm from "./steps/impact-factors-form"
 import ChallengesForm from "./steps/application-challenges-form"
+import { supabase } from "@/lib/supabase/browser-client"
+import { useRouter } from "next/navigation"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -173,6 +173,7 @@ const SurveyLayout = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [stepCompleted, setStepCompleted] = useState(0)
+  const router = useRouter()
 
   const [surveyFormData, setSurveyFormData] = useState<SurveyForm>({
     survey_id: uuidv4(),
@@ -445,36 +446,8 @@ const SurveyLayout = () => {
             }
             break
           case 5:
-            try {
-              // Handle challenges, if unchecked, delete from DB
-              for (const challenge of challenges) {
-                if (challenge.isChecked) {
-                  await addOrUpdateChallenge({
-                    challenge_id: challenge.challenge_id,
-                    survey_id: surveyId,
-                    challenge: challenge.challenge
-                  })
-                } else {
-                  await deleteChallenge(challenge.challenge_id)
-                }
-              }
-
-              // Handle factors
-              for (const factor of factors) {
-                if (factor.isChecked) {
-                  await addOrUpdateOutcomeFactor({
-                    factor_id: factor.factor_id,
-                    survey_id: surveyId,
-                    factor: factor.factor
-                  })
-                } else {
-                  await deleteOutcomeFactor(factor.factor_id)
-                }
-              }
-            } catch (error) {
-              console.error("Error updating challenges and factors:", error)
-            }
-
+            await saveChallengesAndFactors()
+            await handleSubmitSurvey()
             break
         }
         // Only update stepCompleted if we're moving to a new step
@@ -585,6 +558,62 @@ const SurveyLayout = () => {
 
     // After all updates, mark all applications as saved in the state
     setApplications(applications.map(app => ({ ...app, isSaved: true })))
+  }
+
+  const saveChallengesAndFactors = async () => {
+    try {
+      // Handle challenges, if unchecked, delete from DB
+      for (const challenge of challenges) {
+        if (challenge.isChecked) {
+          await addOrUpdateChallenge({
+            challenge_id: challenge.challenge_id,
+            survey_id: surveyId,
+            challenge: challenge.challenge
+          })
+        } else {
+          await deleteChallenge(challenge.challenge_id)
+        }
+      }
+
+      // Handle factors
+      for (const factor of factors) {
+        if (factor.isChecked) {
+          await addOrUpdateOutcomeFactor({
+            factor_id: factor.factor_id,
+            survey_id: surveyId,
+            factor: factor.factor
+          })
+        } else {
+          await deleteOutcomeFactor(factor.factor_id)
+        }
+      }
+    } catch (error) {
+      console.error("Error updating challenges and factors:", error)
+    }
+  }
+
+  const handleSubmitSurvey = async () => {
+    try {
+      //update completed step to 5
+      await updateSurveyResponseStep(surveyId, 5, {})
+
+      //get workspace info for redirection post survey completion
+      const { data: homeWorkspace, error } = await supabase
+        .from("workspaces")
+        .select("*")
+        .eq("user_id", profile?.user_id || "")
+        .eq("is_home", true)
+        .single()
+
+      if (!homeWorkspace) {
+        throw new Error(error?.message || "Unable to find home workspace")
+      }
+
+      // Navigate to workspace
+      router.push(`/${homeWorkspace.id}/chat`)
+    } catch (error) {
+      console.error("Error submitting survey:", error)
+    }
   }
 
   const isStepComplete = () => {
