@@ -23,12 +23,10 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
   }
 
   const handleGPAChange = (value: number | null, name: string) => {
-    console.log(value)
     setFormData(prevData => ({
       ...prevData,
       [name]: value
     }))
-    console.log(formData)
   }
 
   return (

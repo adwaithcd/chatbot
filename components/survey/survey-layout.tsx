@@ -535,7 +535,6 @@ const SurveyLayout = () => {
     const existingApplications = await getCollegeApplications(
       surveyFormData.survey_id
     )
-    console.log("existingApplications", existingApplications)
     if (existingApplications.length > 0) {
       setApplications(
         existingApplications.map(application => ({
@@ -616,7 +615,15 @@ const SurveyLayout = () => {
       //update completed step to 5
       await updateSurveyResponseStep(surveyId, 5, {})
 
-      //get workspace info for redirection post survey completion
+      //updating to 6 to show completion message
+      setCurrentStep(6)
+    } catch (error) {
+      console.error("Error submitting survey:", error)
+    }
+  }
+
+  const handleNavigateToChat = async () => {
+    try {
       const { data: homeWorkspace, error } = await supabase
         .from("workspaces")
         .select("*")
@@ -628,10 +635,9 @@ const SurveyLayout = () => {
         throw new Error(error?.message || "Unable to find home workspace")
       }
 
-      // Navigate to workspace
       router.push(`/${homeWorkspace.id}/chat`)
     } catch (error) {
-      console.error("Error submitting survey:", error)
+      console.error("Error navigating to chat:", error)
     }
   }
 
@@ -696,6 +702,15 @@ const SurveyLayout = () => {
     }
   }
 
+  const renderCompletionMessage = () => (
+    <div className="bg-background flex h-screen w-full items-center justify-center">
+      <div className="flex flex-col items-center space-y-6">
+        <p className="text-lg">We have saved your responses</p>
+        <Button onClick={handleNavigateToChat}>Go to Chat</Button>
+      </div>
+    </div>
+  )
+
   const renderStepContent = () => {
     if (isLoading) {
       return <Loading />
@@ -750,9 +765,14 @@ const SurveyLayout = () => {
   }
 
   const handleStepClick = (stepId: number) => {
-    if (stepId <= stepCompleted + 1) {
+    if (stepId <= stepCompleted + 1 && currentStep !== 6) {
       setCurrentStep(stepId)
     }
+  }
+
+  // If we're on step 6 (completion), render only the completion message
+  if (currentStep === 6) {
+    return renderCompletionMessage()
   }
 
   return (

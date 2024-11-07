@@ -68,6 +68,21 @@ CREATE TABLE IF NOT EXISTS application_outcome_factors (
   updated_at TIMESTAMPTZ
 );
 
+-- Exit survey responses Table
+CREATE TABLE IF NOT EXISTS exit_survey_responses (
+    exit_survey_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    step_completed INT NOT NULL DEFAULT 0,
+    helpfulness_rating INT,
+    helpfulness_feedback TEXT,
+    trustworthiness_rating INT,
+    trustworthiness_feedback TEXT,
+    additional_feedback TEXT,
+    follow_up_contact BOOLEAN DEFAULT false,
+    gift_card_preference TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ
+);
 
 -- Indexes
 CREATE INDEX idx_test_scores_survey_id ON test_scores (survey_id);
@@ -108,6 +123,12 @@ CREATE POLICY "Allow full access to own application outcome factors"
 ON application_outcome_factors
 USING (survey_id IN (SELECT survey_id FROM survey_responses WHERE user_id = auth.uid()));
 
+ALTER TABLE exit_survey_responses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow full access to own exit survey responses"
+ON exit_survey_responses
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
 
 -- Triggers
 CREATE TRIGGER update_survey_responses_updated_at
@@ -137,5 +158,10 @@ EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_application_outcome_factors_updated_at
 BEFORE UPDATE ON application_outcome_factors
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_exit_survey_responses_updated_at
+BEFORE UPDATE ON exit_survey_responses
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
