@@ -7,6 +7,11 @@ import { v4 as uuidv4 } from "uuid"
 import OverallExperienceForm from "./overall-experience-form"
 import FollowUpForm from "./follow-up-form"
 import Loading from "@/app/[locale]/loading"
+import {
+  getExitSurveyResponseByUserId,
+  updateExitSurveyStep,
+  upsertExitSurveyResponse
+} from "@/db/exit-survey"
 
 interface ExitSurveyForm {
   exit_survey_id: string
@@ -30,7 +35,7 @@ const ExitSurveyLayout = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [currentStep, setCurrentStep] = useState(1)
   const [stepCompleted, setStepCompleted] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const [surveyFormData, setSurveyFormData] = useState<ExitSurveyForm>({
     exit_survey_id: uuidv4(),
@@ -45,9 +50,101 @@ const ExitSurveyLayout = () => {
     gift_card_preference: null
   })
 
+  useEffect(() => {
+    const fetchExitSurveyResponse = async () => {
+      if (profile) {
+        setIsLoading(true)
+        try {
+          const exitSurveyResponse = await getExitSurveyResponseByUserId(
+            profile.user_id
+          )
+
+          if (exitSurveyResponse) {
+            setSurveyFormData({
+              exit_survey_id: exitSurveyResponse.exit_survey_id,
+              user_id: profile.user_id,
+              step_completed: exitSurveyResponse.step_completed,
+              helpfulness_rating: exitSurveyResponse.helpfulness_rating,
+              helpfulness_feedback: exitSurveyResponse.helpfulness_feedback,
+              trustworthiness_rating: exitSurveyResponse.trustworthiness_rating,
+              trustworthiness_feedback:
+                exitSurveyResponse.trustworthiness_feedback,
+              additional_feedback: exitSurveyResponse.additional_feedback,
+              follow_up_contact: exitSurveyResponse.follow_up_contact ?? false,
+              gift_card_preference: exitSurveyResponse.gift_card_preference
+            })
+            setCurrentStep(exitSurveyResponse.step_completed + 1)
+            setStepCompleted(exitSurveyResponse.step_completed)
+          } else {
+            setSurveyFormData(prev => ({
+              ...prev,
+              user_id: profile.user_id
+            }))
+          }
+        } catch (error) {
+          console.error(error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchExitSurveyResponse()
+  }, [profile])
+
   const handleNextStep = async () => {
+    if (isStepComplete()) {
+      try {
+        switch (currentStep) {
+          case 1:
+            await upsertExitSurveyResponse(surveyFormData)
+            break
+          case 2:
+            await upsertExitSurveyResponse(surveyFormData)
+            break
+        }
+        if (currentStep > stepCompleted) {
+          await updateExitSurveyStep(surveyFormData.exit_survey_id, currentStep)
+          setStepCompleted(currentStep)
+        }
+        setCurrentStep(currentStep + 1)
+      } catch (error) {
+        console.error("Error updating exit survey data:", error)
+      }
+    }
     setStepCompleted(currentStep)
     setCurrentStep(currentStep + 1)
+  }
+
+  const isStepComplete = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          surveyFormData.helpfulness_rating !== null &&
+          surveyFormData.helpfulness_feedback !== null &&
+          surveyFormData.helpfulness_feedback.trim() !== "" &&
+          surveyFormData.trustworthiness_rating !== null &&
+          surveyFormData.trustworthiness_feedback !== null &&
+          surveyFormData.trustworthiness_feedback.trim() !== "" &&
+          surveyFormData.additional_feedback !== null &&
+          surveyFormData.additional_feedback.trim() !== ""
+        )
+      case 2:
+        if (surveyFormData.gift_card_preference === "no_contact") {
+          return true
+        }
+        if (surveyFormData.gift_card_preference === "other") {
+          return false // Submit should be disabled if "other" is selected without a value
+        }
+        return (
+          surveyFormData.follow_up_contact &&
+          surveyFormData.gift_card_preference &&
+          surveyFormData.gift_card_preference.trim() !== "" &&
+          surveyFormData.gift_card_preference !== "other"
+        )
+      default:
+        return true
+    }
   }
 
   const renderStepContent = () => {
@@ -77,6 +174,20 @@ const ExitSurveyLayout = () => {
     if (stepId <= stepCompleted + 1) {
       setCurrentStep(stepId)
     }
+  }
+
+  const renderCompletionMessage = () => (
+    <div className="bg-background flex h-screen w-full items-center justify-center">
+      <div className="flex flex-col items-center space-y-6">
+        <p className="text-lg">We have saved your responses</p>
+        <Button>Go to Chat</Button>
+      </div>
+    </div>
+  )
+
+  // If we're on step 3 (completion), render only the completion message
+  if (currentStep === 3) {
+    return renderCompletionMessage()
   }
 
   return (
@@ -115,7 +226,7 @@ const ExitSurveyLayout = () => {
           {renderStepContent()}
         </div>
         <div className="fixed bottom-8 right-8">
-          <Button onClick={handleNextStep}>
+          <Button onClick={handleNextStep} disabled={!isStepComplete()}>
             {currentStep === 2 ? "Submit" : "Next"}
           </Button>
         </div>

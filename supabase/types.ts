@@ -667,6 +667,59 @@ export type Database = {
           },
         ]
       }
+      exit_survey_responses: {
+        Row: {
+          additional_feedback: string | null
+          created_at: string
+          exit_survey_id: string
+          follow_up_contact: boolean | null
+          gift_card_preference: string | null
+          helpfulness_feedback: string | null
+          helpfulness_rating: number | null
+          step_completed: number
+          trustworthiness_feedback: string | null
+          trustworthiness_rating: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          additional_feedback?: string | null
+          created_at?: string
+          exit_survey_id?: string
+          follow_up_contact?: boolean | null
+          gift_card_preference?: string | null
+          helpfulness_feedback?: string | null
+          helpfulness_rating?: number | null
+          step_completed?: number
+          trustworthiness_feedback?: string | null
+          trustworthiness_rating?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          additional_feedback?: string | null
+          created_at?: string
+          exit_survey_id?: string
+          follow_up_contact?: boolean | null
+          gift_card_preference?: string | null
+          helpfulness_feedback?: string | null
+          helpfulness_rating?: number | null
+          step_completed?: number
+          trustworthiness_feedback?: string | null
+          trustworthiness_rating?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exit_survey_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_items: {
         Row: {
           content: string

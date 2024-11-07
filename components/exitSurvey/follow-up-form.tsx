@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -25,18 +25,49 @@ const FollowUpForm: React.FC<FollowUpFormProps> = ({
   formData,
   setFormData
 }) => {
+  const [otherGiftCard, setOtherGiftCard] = useState("")
+  const [selectedOption, setSelectedOption] = useState(
+    formData.gift_card_preference || ""
+  )
+
+  // Initialize the other gift card input if there's a custom value
+  useEffect(() => {
+    if (
+      formData.gift_card_preference &&
+      !giftCardOptions.some(opt => opt.value === formData.gift_card_preference)
+    ) {
+      setOtherGiftCard(formData.gift_card_preference)
+      setSelectedOption("other")
+    } else {
+      setSelectedOption(formData.gift_card_preference || "")
+    }
+  }, [formData.gift_card_preference])
+
   const handleGiftCardChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      gift_card_preference: value,
-      follow_up_contact: value !== "no_contact"
-    }))
+    setSelectedOption(value)
+
+    if (value === "other") {
+      // When "other" is selected, keep the existing other gift card value
+      setFormData((prev: any) => ({
+        ...prev,
+        gift_card_preference: otherGiftCard || "other",
+        follow_up_contact: true
+      }))
+    } else {
+      setFormData((prev: any) => ({
+        ...prev,
+        gift_card_preference: value,
+        follow_up_contact: value !== "no_contact"
+      }))
+    }
   }
 
   const handleOtherGiftCardChange = (value: string) => {
-    setFormData(prev => ({
+    setOtherGiftCard(value)
+    setFormData((prev: any) => ({
       ...prev,
-      gift_card_preference: value
+      gift_card_preference: value || "other",
+      follow_up_contact: true
     }))
   }
 
@@ -51,7 +82,7 @@ const FollowUpForm: React.FC<FollowUpFormProps> = ({
         </Label>
 
         <RadioGroup
-          value={formData.gift_card_preference || ""}
+          value={selectedOption}
           onValueChange={handleGiftCardChange}
           className="mt-4 space-y-4"
         >
@@ -64,14 +95,14 @@ const FollowUpForm: React.FC<FollowUpFormProps> = ({
               >
                 {option.label}
               </Label>
-              {option.value === "other" &&
-                formData.gift_card_preference === "other" && (
-                  <Input
-                    className="ml-2 w-[200px]"
-                    placeholder="Specify"
-                    onChange={e => handleOtherGiftCardChange(e.target.value)}
-                  />
-                )}
+              {option.value === "other" && selectedOption === "other" && (
+                <Input
+                  className="ml-2 w-[200px]"
+                  placeholder="Specify"
+                  value={otherGiftCard}
+                  onChange={e => handleOtherGiftCardChange(e.target.value)}
+                />
+              )}
             </div>
           ))}
         </RadioGroup>

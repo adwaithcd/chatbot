@@ -2,6 +2,7 @@ import React from "react"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 // import StarRating from "../components/star-rating"
+import StarRating from "./star-rating"
 
 interface OverallExperienceFormProps {
   formData: {
@@ -19,10 +20,12 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
   setFormData
 }) => {
   const handleInputChange = (field: string, value: string | number | null) => {
-    setFormData(prev => ({
+    setFormData((prev: OverallExperienceFormProps["formData"]) => ({
       ...prev,
       [field]: value
     }))
+
+    console.log(formData)
   }
 
   return (
@@ -32,13 +35,13 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           1. Was the college application bot helpful for your college
           application?
         </Label>
-        {/* <StarRating
+        <StarRating
           rating={formData.helpfulness_rating || 0}
-          onRatingChange={(rating) =>
+          onRatingChange={rating =>
             handleInputChange("helpfulness_rating", rating)
           }
           className="mt-2"
-        /> */}
+        />
       </div>
 
       <div className="space-y-4">
@@ -51,7 +54,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("helpfulness_feedback", e.target.value)
           }
-          className="min-h-[100px] resize-none"
+          className="min-h-[60px] resize-none"
           placeholder="Enter your feedback here"
         />
       </div>
@@ -60,13 +63,13 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
         <Label className="text-base">
           3. Do you find the college application bot trustworthy?
         </Label>
-        {/* <StarRating
+        <StarRating
           rating={formData.trustworthiness_rating || 0}
-          onRatingChange={(rating) =>
+          onRatingChange={rating =>
             handleInputChange("trustworthiness_rating", rating)
           }
           className="mt-2"
-        /> */}
+        />
       </div>
 
       <div className="space-y-4">
@@ -79,7 +82,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("trustworthiness_feedback", e.target.value)
           }
-          className="min-h-[100px] resize-none"
+          className="min-h-[60px] resize-none"
           placeholder="Enter your feedback here"
         />
       </div>
@@ -94,7 +97,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("additional_feedback", e.target.value)
           }
-          className="min-h-[100px] resize-none"
+          className="min-h-[60px] resize-none"
           placeholder="Enter your additional feedback here"
         />
       </div>
