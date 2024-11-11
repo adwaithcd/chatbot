@@ -12,6 +12,7 @@ import { updateProfile } from "@/db/profile"
 import { uploadProfileImage } from "@/db/storage/profile-images"
 import { useTheme } from "next-themes"
 import Image from "next/image"
+import { IconUserCircle } from "@tabler/icons-react"
 // @ts-ignore
 import { UilEditAlt } from "@iconscout/react-unicons"
 import { toast } from "sonner"
@@ -29,6 +30,7 @@ export default function ProfileSettings() {
   )
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [isDisplayNameEditable, setIsDisplayNameEditable] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const displayNameInputRef = useRef<HTMLInputElement>(null)
@@ -38,6 +40,7 @@ export default function ProfileSettings() {
       setDisplayName(profile.display_name || "")
       setUsername(profile.username || "")
       setProfileImageSrc(profile.image_url || "")
+      setImageError(false)
     }
   }, [profile])
 
@@ -192,13 +195,18 @@ export default function ProfileSettings() {
             <div className="flex items-center justify-between py-2">
               <Label className="p-2">Avatar</Label>
               <div className="flex items-center space-x-2">
-                <Image
-                  src={profileImageSrc || "/default-avatar.png"}
-                  alt="Profile"
-                  width={50}
-                  height={50}
-                  className="rounded-full"
-                />
+                {profileImageSrc && !imageError ? (
+                  <Image
+                    src={profileImageSrc}
+                    alt="Profile"
+                    width={50}
+                    height={50}
+                    className="rounded-full"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <IconUserCircle className="size-[40px] " />
+                )}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -238,7 +246,7 @@ export default function ProfileSettings() {
                 </button>
               </div>
             </div>
-            {/* <div className={`my-2 h-px ${getSeparatorColor()}`} />
+            <div className={`my-2 h-px ${getSeparatorColor()}`} />
             <div className="flex items-center justify-between py-2">
               <Label className="p-2">Username</Label>
               <div
@@ -246,7 +254,7 @@ export default function ProfileSettings() {
               >
                 {username || ""}
               </div>
-            </div> */}
+            </div>
             {/* <div className={`my-2 h-px ${getSeparatorColor()}`} /> */}
             {/* <div className="flex items-center justify-between py-2">
               <Label className="p-2">Email</Label>
