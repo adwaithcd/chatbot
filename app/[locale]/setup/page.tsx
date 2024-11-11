@@ -163,7 +163,7 @@ export default function SetupPage() {
           <StepContainer
             stepDescription="Let's create your profile."
             stepNum={currentStep}
-            stepTitle="Let's create your profile"
+            stepTitle="Welcome to EduChat"
             onShouldProceed={handleShouldProceed}
             showNextButton={!!(username && usernameAvailable)}
             showBackButton={false}

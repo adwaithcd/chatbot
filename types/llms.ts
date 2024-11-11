@@ -1,8 +1,8 @@
 import { ModelProvider } from "."
 
 export type LLMID =
-  | OpenAILLMID
   | GoogleLLMID
+  | OpenAILLMID
   | AnthropicLLMID
   | MistralLLMID
   | GroqLLMID
