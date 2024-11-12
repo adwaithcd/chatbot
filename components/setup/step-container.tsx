@@ -46,15 +46,17 @@ export const StepContainer: FC<StepContainerProps> = ({
       onKeyDown={handleKeyDown}
     >
       <CardHeader>
-        <CardTitle className="flex justify-between">
+        <CardTitle className="flex justify-center">
           <div>{stepTitle}</div>
 
-          <div className="text-sm">
+          {/* <div className="text-sm">
             {stepNum} / {SETUP_STEP_COUNT}
-          </div>
+          </div> */}
         </CardTitle>
 
-        <CardDescription>{stepDescription}</CardDescription>
+        <CardDescription className="flex justify-center">
+          {stepDescription}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">{children}</CardContent>
@@ -73,15 +75,14 @@ export const StepContainer: FC<StepContainerProps> = ({
         </div>
 
         <div>
-          {showNextButton && (
-            <Button
-              ref={buttonRef}
-              size="sm"
-              onClick={() => onShouldProceed(true)}
-            >
-              Next
-            </Button>
-          )}
+          <Button
+            ref={buttonRef}
+            size="sm"
+            onClick={() => onShouldProceed(true)}
+            disabled={!showNextButton}
+          >
+            Next
+          </Button>
         </div>
       </CardFooter>
     </Card>
