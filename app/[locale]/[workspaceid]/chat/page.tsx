@@ -167,9 +167,9 @@ export default function ChatPage() {
               </div>
             </div>
           </div>
-          <div className="absolute right-2 top-2">
+          {/* <div className="absolute right-2 top-2">
             <ChatSettings />
-          </div>
+          </div> */}
           <div className="absolute inset-x-0 bottom-0 px-2 pb-3 pt-0 sm:pb-8 sm:pt-5">
             <div className="mx-auto w-full max-w-3xl">
               <ChatInput />
