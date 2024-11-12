@@ -10,12 +10,19 @@ import { supabase } from "@/lib/supabase/browser-client"
 import { TablesUpdate } from "@/supabase/types"
 import { useRouter } from "next/navigation"
 import { ChangeEvent, useContext, useEffect, useRef, useState } from "react"
-import { StepContainer } from "../../../components/setup/step-container"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter
+} from "@/components/ui/card"
 import { toast } from "sonner"
 import { uploadProfileImage } from "@/db/storage/profile-images"
 import Image from "next/image"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import {
   PROFILE_DISPLAY_NAME_MAX,
   PROFILE_USERNAME_MAX,
@@ -30,6 +37,7 @@ import {
 //@ts-ignore
 import { UilEditAlt } from "@iconscout/react-unicons"
 import { LimitDisplay } from "@/components/ui/limit-display"
+import { getSurveyResponseByUserId } from "@/db/survey-responses"
 
 export default function SetupPage() {
   const { profile, setProfile, setWorkspaces, setSelectedWorkspace } =
@@ -39,7 +47,6 @@ export default function SetupPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
-  const [currentStep, setCurrentStep] = useState(1)
   const [checkingUsername, setCheckingUsername] = useState(false)
 
   // Profile Info
@@ -66,13 +73,22 @@ export default function SetupPage() {
         setUsername(profile.username)
         setProfileImageSrc(profile.image_url || "")
 
+        //if user has not onboarded, show the setup page
         if (!profile.has_onboarded) {
           setLoading(false)
         } else {
-          const homeWorkspaceId = await getHomeWorkspaceByUserId(
-            session.user.id
+          const surveyResponse = await getSurveyResponseByUserId(
+            profile.user_id
           )
-          return router.push(`/${homeWorkspaceId}/chat`)
+          // if user has completed the survey, redirect to chat
+          if (surveyResponse && surveyResponse.step_completed >= 5) {
+            const homeWorkspaceId = await getHomeWorkspaceByUserId(
+              session.user.id
+            )
+            return router.push(`/${homeWorkspaceId}/chat`)
+          } else {
+            return router.push("/survey")
+          }
         }
       }
     })()
@@ -168,18 +184,6 @@ export default function SetupPage() {
     }
   }
 
-  const handleShouldProceed = async (proceed: boolean) => {
-    if (proceed) {
-      if (currentStep === 1) {
-        setCurrentStep(2)
-      } else if (currentStep === 2) {
-        await handleSaveAndProceed()
-      }
-    } else {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
   const handleSaveAndProceed = async () => {
     const session = (await supabase.auth.getSession()).data.session
     if (!session) {
@@ -226,146 +230,110 @@ export default function SetupPage() {
   const isNextEnabled =
     !!username && usernameAvailable && displayName.trim().length > 0
 
-  const renderStep = (stepNum: number) => {
-    switch (stepNum) {
-      case 1:
-        return (
-          <StepContainer
-            stepDescription="Set up your profile information"
-            stepNum={currentStep}
-            stepTitle="Welcome to EDUCHAT"
-            onShouldProceed={handleShouldProceed}
-            showNextButton={isNextEnabled}
-            showBackButton={false}
-          >
-            <div className="space-y-6">
-              {/* Profile Image Selection */}
-              <div className="flex flex-col items-center space-y-4">
-                <Label>Profile Picture</Label>
-                <div className="flex items-center space-x-2">
-                  <div className="relative size-20">
-                    {profileImageSrc && !imageError ? (
-                      <Image
-                        src={profileImageSrc}
-                        alt="Profile"
-                        width={80}
-                        height={80}
-                        className="rounded-full object-cover"
-                        onError={() => setImageError(true)}
-                      />
-                    ) : (
-                      <IconUserCircle className="size-20" />
-                    )}
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 rounded-full bg-gray-100 p-1.5 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-                    >
-                      <UilEditAlt size={16} />
-                    </button>
-                  </div>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png, image/jpeg, image/jpg"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-              </div>
-
-              {/* Username Input */}
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <Label>Username</Label>
-                  <div className="text-xs">
-                    {usernameAvailable ? (
-                      <div className="text-green-500">AVAILABLE</div>
-                    ) : (
-                      <div className="text-red-500">UNAVAILABLE</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <Input
-                    className="pr-10"
-                    placeholder="username"
-                    value={username}
-                    onChange={e => {
-                      setUsername(e.target.value)
-                      checkUsernameAvailability(e.target.value)
-                    }}
-                    minLength={PROFILE_USERNAME_MIN}
-                    maxLength={PROFILE_USERNAME_MAX}
-                  />
-
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    {checkingUsername ? (
-                      <IconLoader2 className="animate-spin" />
-                    ) : usernameAvailable ? (
-                      <IconCircleCheckFilled className="text-green-500" />
-                    ) : (
-                      <IconCircleXFilled className="text-red-500" />
-                    )}
-                  </div>
-                </div>
-
-                <LimitDisplay
-                  used={username.length}
-                  limit={PROFILE_USERNAME_MAX}
-                />
-              </div>
-
-              {/* Display Name Input */}
-              <div className="space-y-1">
-                <Label>Display Name</Label>
-                <Input
-                  placeholder="Your Name"
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  maxLength={PROFILE_DISPLAY_NAME_MAX}
-                />
-                <LimitDisplay
-                  used={displayName.length}
-                  limit={PROFILE_DISPLAY_NAME_MAX}
-                />
-              </div>
-            </div>
-          </StepContainer>
-        )
-
-      case 2:
-        return (
-          <StepContainer
-            stepDescription=""
-            stepNum={currentStep}
-            stepTitle={`Welcome ${displayName ? displayName.split(" ")[0] : ""}!`}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={true}
-            showBackButton={true}
-          >
-            <div className="flex min-h-[327px] flex-col items-center justify-center space-y-6 px-4 text-center">
-              {/* <div className="text-2xl font-semibold">
-                Welcome {displayName ? displayName.split(' ')[0] : null}!
-              </div> */}
-              {/* <div>
-                {"We're excited to have you join us. Before we begin, we have a quick survey to help us personalize your experience."}
-              </div> */}
-              <div>
-                Click next to proceed to a quick survey and start chatting.
-              </div>
-            </div>
-          </StepContainer>
-        )
-
-      default:
-        return null
-    }
-  }
-
   return (
     <div className="flex h-full items-center justify-center">
-      {renderStep(currentStep)}
+      <Card className="max-h-[calc(100vh-60px)] w-[600px] overflow-auto">
+        <CardHeader>
+          <CardTitle className="text-center">Welcome to EDUCHAT</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Profile Image Selection */}
+          <div className="flex flex-col items-center space-y-4">
+            <Label>Profile Picture</Label>
+            <div className="flex items-center space-x-2">
+              <div className="relative size-20">
+                {profileImageSrc && !imageError ? (
+                  <Image
+                    src={profileImageSrc}
+                    alt="Profile"
+                    width={80}
+                    height={80}
+                    className="rounded-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <IconUserCircle className="size-20" />
+                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 rounded-full bg-gray-100 p-1.5 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                >
+                  <UilEditAlt size={16} />
+                </button>
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+          </div>
+
+          {/* Username Input */}
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <Label>Username</Label>
+              <div className="text-xs">
+                {usernameAvailable ? (
+                  <div className="text-green-500">AVAILABLE</div>
+                ) : (
+                  <div className="text-red-500">UNAVAILABLE</div>
+                )}
+              </div>
+            </div>
+
+            <div className="relative">
+              <Input
+                className="pr-10"
+                placeholder="username"
+                value={username}
+                onChange={e => {
+                  setUsername(e.target.value)
+                  checkUsernameAvailability(e.target.value)
+                }}
+                minLength={PROFILE_USERNAME_MIN}
+                maxLength={PROFILE_USERNAME_MAX}
+              />
+
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                {checkingUsername ? (
+                  <IconLoader2 className="animate-spin" />
+                ) : usernameAvailable ? (
+                  <IconCircleCheckFilled className="text-green-500" />
+                ) : (
+                  <IconCircleXFilled className="text-red-500" />
+                )}
+              </div>
+            </div>
+
+            <LimitDisplay used={username.length} limit={PROFILE_USERNAME_MAX} />
+          </div>
+
+          {/* Display Name Input */}
+          <div className="space-y-1">
+            <Label>Display Name</Label>
+            <Input
+              placeholder="Your Name"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              maxLength={PROFILE_DISPLAY_NAME_MAX}
+            />
+            <LimitDisplay
+              used={displayName.length}
+              limit={PROFILE_DISPLAY_NAME_MAX}
+            />
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex justify-end">
+          <Button onClick={handleSaveAndProceed} disabled={!isNextEnabled}>
+            Next
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
