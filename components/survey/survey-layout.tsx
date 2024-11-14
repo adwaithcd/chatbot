@@ -32,6 +32,13 @@ import {
   SurveyForm,
   TestScore
 } from "./surveyTypes"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
 import BackgroundForm from "./steps/background-form"
 import TestScoresForm from "./steps/test-score-form"
 import ApplicationHistoryForm from "./steps/application-history-form"
@@ -173,6 +180,19 @@ const SurveyLayout = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [stepCompleted, setStepCompleted] = useState(0)
+  const [isDirty, setIsDirty] = useState(false)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const [pendingStepNavigation, setPendingStepNavigation] = useState<
+    number | null
+  >(null)
+  const [originalState, setOriginalState] = useState({
+    surveyFormData: {} as SurveyForm,
+    testScores: [] as TestScore[],
+    applications: [] as CollegeApplications[],
+    impactFactors: [] as ImpactFactors[],
+    challenges: [] as ApplicationChallenge[],
+    factors: [] as ApplicationOutcomeFactor[]
+  })
   const router = useRouter()
 
   const [surveyFormData, setSurveyFormData] = useState<SurveyForm>({
@@ -253,33 +273,37 @@ const SurveyLayout = () => {
             //get data for other forms if they are done
             if (surveyResponse.step_completed >= 1) {
               const scores = await getTestScores(surveyResponse.survey_id)
-              setTestScores(
-                scores.map(score => ({
-                  score_id: score.score_id,
-                  test_name: score.test_name,
-                  test_score: score.test_score,
-                  isChecked: score.test_score !== null,
-                  isUserAdded: false
-                }))
-              )
+              const formattedScores = scores.map(score => ({
+                score_id: score.score_id,
+                test_name: score.test_name,
+                test_score: score.test_score,
+                isChecked: score.test_score !== null,
+                isUserAdded: false
+              }))
+
+              // Set both the current test scores and original state
+              setTestScores(formattedScores)
+              setOriginalState(prev => ({
+                ...prev,
+                testScores: formattedScores
+              }))
             }
 
             if (surveyResponse.step_completed >= 2) {
               const applications = await getCollegeApplications(
                 surveyResponse.survey_id
               )
+              let updatedApplications
               if (applications.length > 0) {
-                setApplications(
-                  applications.map(application => ({
-                    application_id: application.application_id,
-                    college_name: application.college_name,
-                    major: application.major,
-                    offer_status: application.offer_status,
-                    isSaved: true
-                  }))
-                )
+                updatedApplications = applications.map(application => ({
+                  application_id: application.application_id,
+                  college_name: application.college_name,
+                  major: application.major,
+                  offer_status: application.offer_status,
+                  isSaved: true
+                }))
               } else {
-                setApplications([
+                updatedApplications = [
                   {
                     application_id: uuidv4(),
                     college_name: "",
@@ -287,8 +311,22 @@ const SurveyLayout = () => {
                     offer_status: "Offer received",
                     isSaved: false
                   }
-                ])
+                ]
               }
+              setApplications(updatedApplications)
+              // Update original state with the loaded applications
+              setOriginalState(prev => ({
+                ...prev,
+                applications: updatedApplications,
+                // Also update surveyFormData in original state
+                surveyFormData: {
+                  ...surveyFormData,
+                  current_enrolled_program:
+                    surveyResponse.current_enrolled_program,
+                  reason_for_choosing_asu:
+                    surveyResponse.reason_for_choosing_asu
+                }
+              }))
             }
 
             if (surveyResponse.step_completed >= 3) {
@@ -296,19 +334,22 @@ const SurveyLayout = () => {
                 const savedFactors = await getImpactFactors(
                   surveyResponse.survey_id
                 )
+                let updatedFactors
 
                 if (savedFactors && savedFactors.length > 0) {
-                  // If there are saved factors, use them with user_added_factor false - here no extra check as all factors are saved at once
-                  setImpactFactors(
-                    savedFactors.map(factor => ({
-                      ...factor,
-                      user_added_factor: false
-                    }))
-                  )
+                  updatedFactors = savedFactors.map(factor => ({
+                    ...factor,
+                    user_added_factor: false
+                  }))
                 } else {
-                  // No saved factors, use defaults
-                  setImpactFactors(DEFAULT_IMPACT_FACTORS)
+                  updatedFactors = DEFAULT_IMPACT_FACTORS
                 }
+
+                setImpactFactors(updatedFactors)
+                setOriginalState(prev => ({
+                  ...prev,
+                  impactFactors: updatedFactors
+                }))
               } catch (error) {
                 console.error("Error fetching impact factors:", error)
                 setImpactFactors(DEFAULT_IMPACT_FACTORS)
@@ -316,6 +357,10 @@ const SurveyLayout = () => {
             } else {
               // Not at step 4 yet, use defaults
               setImpactFactors(DEFAULT_IMPACT_FACTORS)
+              setOriginalState(prev => ({
+                ...prev,
+                impactFactors: DEFAULT_IMPACT_FACTORS
+              }))
             }
 
             if (surveyResponse.step_completed >= 4) {
@@ -410,8 +455,163 @@ const SurveyLayout = () => {
     fetchSurveyResponse()
   }, [profile])
 
+  //dirty data use effect
+  useEffect(() => {
+    const isDataDirty = () => {
+      switch (currentStep) {
+        case 1:
+          return (
+            JSON.stringify(surveyFormData) !==
+            JSON.stringify(originalState.surveyFormData)
+          )
+        case 2:
+        case 2:
+          // Only consider test scores where user has actually entered data
+          const hasEnteredScores = testScores.some(
+            score => score.isChecked && score.test_score !== null
+          )
+
+          const originalHadScores = originalState.testScores.some(
+            score => score.isChecked && score.test_score !== null
+          )
+
+          // If neither current nor original state has entered scores, not dirty
+          if (!hasEnteredScores && !originalHadScores) {
+            return false
+          }
+
+          // Compare only scores that have actual data
+          const activeScores = testScores.filter(
+            score => score.isChecked && score.test_score !== null
+          )
+          const originalActiveScores = originalState.testScores.filter(
+            score => score.isChecked && score.test_score !== null
+          )
+
+          return (
+            JSON.stringify(activeScores) !==
+            JSON.stringify(originalActiveScores)
+          )
+        case 3:
+          // Only consider applications that have some data entered
+          const hasEnteredApplications = applications.some(
+            app =>
+              app.college_name.trim() !== "" ||
+              app.major?.trim() !== "" ||
+              app.offer_status !== "Offer received"
+          )
+
+          const originalHadApplications = originalState.applications.some(
+            app =>
+              app.college_name.trim() !== "" ||
+              app.major?.trim() !== "" ||
+              app.offer_status !== "Offer received"
+          )
+
+          const applicationsChanged =
+            hasEnteredApplications !== originalHadApplications ||
+            (hasEnteredApplications &&
+              JSON.stringify(
+                applications.filter(
+                  app =>
+                    app.college_name.trim() !== "" ||
+                    app.major?.trim() !== "" ||
+                    app.offer_status !== "Offer received"
+                )
+              ) !==
+                JSON.stringify(
+                  originalState.applications.filter(
+                    app =>
+                      app.college_name.trim() !== "" ||
+                      app.major?.trim() !== "" ||
+                      app.offer_status !== "Offer received"
+                  )
+                ))
+
+          const relevantFormDataChanged =
+            (surveyFormData.current_enrolled_program?.trim() || "") !==
+              (originalState.surveyFormData.current_enrolled_program?.trim() ||
+                "") ||
+            (surveyFormData.reason_for_choosing_asu?.trim() || "") !==
+              (originalState.surveyFormData.reason_for_choosing_asu?.trim() ||
+                "")
+
+          return applicationsChanged || relevantFormDataChanged
+        case 4:
+          // Check if any impact factors have been categorized
+          const hasChangedFactors = impactFactors.some(
+            factor =>
+              factor.is_important !== null ||
+              (factor.user_added_factor && factor.impact_factor.trim() !== "")
+          )
+
+          const originalHadChangedFactors = originalState.impactFactors.some(
+            factor =>
+              factor.is_important !== null ||
+              (factor.user_added_factor && factor.impact_factor.trim() !== "")
+          )
+
+          const impactFactorsChanged =
+            hasChangedFactors !== originalHadChangedFactors ||
+            (hasChangedFactors &&
+              JSON.stringify(
+                impactFactors.filter(
+                  f =>
+                    f.is_important !== null ||
+                    (f.user_added_factor && f.impact_factor.trim() !== "")
+                )
+              ) !==
+                JSON.stringify(
+                  originalState.impactFactors.filter(
+                    f =>
+                      f.is_important !== null ||
+                      (f.user_added_factor && f.impact_factor.trim() !== "")
+                  )
+                ))
+
+          // Check if financial support details have changed
+          const financialDetailsChanged =
+            (surveyFormData.financial_support_details?.trim() || "") !==
+            (originalState.surveyFormData.financial_support_details?.trim() ||
+              "")
+
+          return impactFactorsChanged || financialDetailsChanged
+        case 5:
+          return (
+            JSON.stringify(challenges) !==
+              JSON.stringify(originalState.challenges) ||
+            JSON.stringify(factors) !== JSON.stringify(originalState.factors)
+          )
+        default:
+          return false
+      }
+    }
+
+    setIsDirty(isDataDirty())
+  }, [
+    surveyFormData,
+    testScores,
+    applications,
+    impactFactors,
+    challenges,
+    factors,
+    currentStep
+  ])
+
+  // useEffect to store original state when step changes
+  useEffect(() => {
+    setOriginalState({
+      surveyFormData,
+      testScores,
+      applications,
+      impactFactors,
+      challenges,
+      factors
+    })
+  }, [currentStep])
+
   const handleNextStep = async () => {
-    if (surveyId && isStepComplete()) {
+    if (surveyId) {
       try {
         switch (currentStep) {
           case 1:
@@ -469,8 +669,8 @@ const SurveyLayout = () => {
             await handleSubmitSurvey()
             break
         }
-        // Only update stepCompleted if we're moving to a new step
-        if (currentStep > stepCompleted) {
+        // Only update stepCompleted if the current step is complete and it's greater than the previous completed step
+        if (currentStep > stepCompleted && isStepComplete()) {
           await updateSurveyResponseStep(surveyId, currentStep, {})
           setStepCompleted(currentStep)
         }
@@ -486,16 +686,43 @@ const SurveyLayout = () => {
     const existingScores = await getTestScores(surveyId)
     // Create default test score rows only if no scores exist
     if (existingScores.length === 0) {
+      const defaultTestScores: TestScore[] = []
       for (const testName of DEFAULT_TESTS) {
-        await addOrUpdateTestScore({
+        const newScore = {
           score_id: uuidv4(),
+          survey_id: surveyId,
+          test_name: testName,
+          test_score: null,
+          isChecked: false,
+          isUserAdded: false
+        }
+        defaultTestScores.push(newScore)
+        await addOrUpdateTestScore({
+          score_id: newScore.score_id,
           survey_id: surveyId,
           test_name: testName,
           test_score: null
         })
       }
+      setTestScores(defaultTestScores)
+      // Update original state with these initialized scores
+      setOriginalState(prev => ({
+        ...prev,
+        testScores: defaultTestScores
+      }))
+    } else {
+      const updatedScores = existingScores.map(score => ({
+        ...score,
+        isChecked: score.test_score !== null,
+        isUserAdded: false
+      }))
+      setTestScores(updatedScores)
+      // Update original state with the existing scores
+      setOriginalState(prev => ({
+        ...prev,
+        testScores: updatedScores
+      }))
     }
-    await updateTestScoresState()
   }
 
   const updateTestScores = async () => {
@@ -560,6 +787,7 @@ const SurveyLayout = () => {
 
   const updateApplications = async () => {
     for (const application of applications) {
+      console.log("application", application)
       const { isSaved, ...applicationToUpdate } = application
       try {
         await addOrUpdateCollegeApplication({
@@ -766,9 +994,92 @@ const SurveyLayout = () => {
 
   const handleStepClick = (stepId: number) => {
     if (stepId <= stepCompleted + 1 && currentStep !== 6) {
-      setCurrentStep(stepId)
+      if (stepId !== currentStep) {
+        if (isDirty) {
+          setShowUnsavedDialog(true)
+          setPendingStepNavigation(stepId)
+        } else {
+          setCurrentStep(stepId)
+        }
+      }
     }
   }
+
+  const handleSaveAndNavigate = async () => {
+    console.log("save and navigate")
+    await handleNextStep()
+    setShowUnsavedDialog(false)
+    if (pendingStepNavigation !== null) {
+      setCurrentStep(pendingStepNavigation)
+      setPendingStepNavigation(null)
+    }
+  }
+
+  const handleDiscard = () => {
+    // Reset state to original values
+    switch (currentStep) {
+      case 1:
+        setSurveyFormData(originalState.surveyFormData)
+        break
+      case 2:
+        setTestScores(originalState.testScores)
+        break
+      case 3:
+      case 3:
+        // If original state had no applications with data, reset to a single empty row
+        const hadApplications = originalState.applications.some(
+          app =>
+            app.college_name.trim() !== "" ||
+            app.major?.trim() !== "" ||
+            app.offer_status !== "Offer received"
+        )
+
+        if (!hadApplications) {
+          setApplications([
+            {
+              application_id: uuidv4(),
+              college_name: "",
+              major: "",
+              offer_status: "Offer received",
+              isSaved: false
+            }
+          ])
+        } else {
+          setApplications(originalState.applications)
+        }
+        setSurveyFormData(originalState.surveyFormData)
+        break
+      case 4:
+        setImpactFactors(originalState.impactFactors)
+        setSurveyFormData(originalState.surveyFormData)
+        break
+      case 5:
+        setChallenges(originalState.challenges)
+        setFactors(originalState.factors)
+        break
+    }
+
+    setShowUnsavedDialog(false)
+    if (pendingStepNavigation !== null) {
+      setCurrentStep(pendingStepNavigation)
+      setPendingStepNavigation(null)
+    }
+  }
+
+  // Add browser navigation/closing handler
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = ""
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [isDirty])
 
   // If we're on step 6 (completion), render only the completion message
   if (currentStep === 6) {
@@ -826,6 +1137,31 @@ const SurveyLayout = () => {
           </Button>
         </div>
       </div>
+      <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500">
+              You have unsaved changes. Would you like to save them before
+              proceeding?
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowUnsavedDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDiscard}>
+              Discard
+            </Button>
+            <Button onClick={handleSaveAndNavigate}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
