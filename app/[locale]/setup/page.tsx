@@ -240,7 +240,7 @@ export default function SetupPage() {
         <CardContent className="space-y-6">
           {/* Profile Image Selection */}
           <div className="flex flex-col items-center space-y-4">
-            <Label>Profile Picture</Label>
+            {/* <Label>Profile Picture</Label> */}
             <div className="flex items-center space-x-2">
               <div className="relative size-20">
                 {profileImageSrc && !imageError ? (
