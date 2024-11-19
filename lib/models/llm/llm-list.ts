@@ -6,13 +6,23 @@ import { GROQ_LLM_LIST } from "./groq-llm-list"
 import { OPENAI_LLM_LIST } from "./openai-llm-list"
 import { PERPLEXITY_LLM_LIST } from "./perplexity-llm-list"
 
+const APPLICATION_CHATBOT: LLM = {
+  modelId: "applicationChatbot",
+  modelName: "Application Chatbot",
+  provider: "applicationChatbot",
+  hostedId: "",
+  platformLink: "",
+  imageInput: false
+}
+
 export const LLM_LIST: LLM[] = [
   ...GOOGLE_LLM_LIST,
   ...OPENAI_LLM_LIST,
   ...MISTRAL_LLM_LIST,
   ...GROQ_LLM_LIST,
   ...PERPLEXITY_LLM_LIST,
-  ...ANTHROPIC_LLM_LIST
+  ...ANTHROPIC_LLM_LIST,
+  APPLICATION_CHATBOT
 ]
 
 export const LLM_LIST_MAP: Record<string, LLM[]> = {
@@ -22,5 +32,6 @@ export const LLM_LIST_MAP: Record<string, LLM[]> = {
   mistral: MISTRAL_LLM_LIST,
   groq: GROQ_LLM_LIST,
   perplexity: PERPLEXITY_LLM_LIST,
-  anthropic: ANTHROPIC_LLM_LIST
+  anthropic: ANTHROPIC_LLM_LIST,
+  applicationChatbot: [APPLICATION_CHATBOT]
 }

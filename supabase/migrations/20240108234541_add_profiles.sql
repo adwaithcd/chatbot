@@ -126,7 +126,7 @@ BEGIN
         TRUE,
         'Home',
         4096,
-        'gemini-pro',
+        'applicationChatbot',
         'You are a friendly, helpful AI assistant.',
         0.5,
         'My home workspace.',

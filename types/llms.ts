@@ -7,6 +7,9 @@ export type LLMID =
   | MistralLLMID
   | GroqLLMID
   | PerplexityLLMID
+  | ApplicationChatbotLLMID
+
+export type ApplicationChatbotLLMID = "applicationChatbot"
 
 // OpenAI Models (UPDATED 5/13/24)
 export type OpenAILLMID =

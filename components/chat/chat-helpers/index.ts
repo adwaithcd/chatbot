@@ -205,7 +205,8 @@ export const handleHostedChat = async (
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>,
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  setToolInUse: React.Dispatch<React.SetStateAction<string>>
+  setToolInUse: React.Dispatch<React.SetStateAction<string>>,
+  chatId: String
 ) => {
   const provider =
     modelData.provider === "openai" && profile.use_azure_openai
@@ -230,9 +231,11 @@ export const handleHostedChat = async (
   const requestBody = {
     chatSettings: payload.chatSettings,
     messages: formattedMessages,
-    customModelId: provider === "custom" ? modelData.hostedId : ""
+    customModelId: provider === "custom" ? modelData.hostedId : "",
+    chatId: provider === "applicationChatbot" ? chatId : ""
   }
 
+  // rest call to the LLM
   const response = await fetchChatResponse(
     apiEndpoint,
     requestBody,
