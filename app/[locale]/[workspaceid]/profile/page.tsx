@@ -164,7 +164,10 @@ export default function ProfileSettings() {
     <div
       className={`flex min-h-screen items-center justify-center ${getBackgroundColor()} theme-transition`}
     >
-      <Button onClick={handleSignOut} className="absolute right-16 top-8">
+      <Button
+        onClick={handleSignOut}
+        className="absolute right-[6vw] top-[4vw] md:right-[5vw] md:top-[3vw] lg:right-16 lg:top-8"
+      >
         Sign Out
       </Button>
 
