@@ -40,40 +40,41 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   //   localStorage.getItem("showSidebar") === "true"
   // )
 
-  const [showSidebar, setShowSidebar] = useState(true)
+  // Initialize sidebar state based on screen size only on first load
+  const [showSidebar, setShowSidebar] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedPreference = localStorage.getItem("sidebarPreference")
+      if (savedPreference !== null) {
+        return savedPreference === "true"
+      }
+      return window.innerWidth >= MOBILE_BREAKPOINT
+    }
+    return true
+  })
+
   const [isMobile, setIsMobile] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const [isDragging, setIsDragging] = useState(false)
 
-  // Handle initial load and window resize
+  // Handle screen resize
   useEffect(() => {
-    const checkScreenSize = () => {
-      const isMobileView = window.innerWidth < MOBILE_BREAKPOINT
-      setIsMobile(isMobileView)
-      // Only auto-collapse sidebar on initial load for mobile
-      if (!localStorage.getItem("sidebarPreference")) {
-        setShowSidebar(!isMobileView)
+    const handleResize = () => {
+      const width = window.innerWidth
+      setIsMobile(width < MOBILE_BREAKPOINT)
+
+      // Only auto-collapse if sidebar is currently open
+      if (showSidebar && width < MOBILE_BREAKPOINT) {
+        setShowSidebar(false)
       }
     }
 
-    // Check initial screen size
-    checkScreenSize()
+    handleResize()
 
-    // Add resize listener
-    window.addEventListener("resize", checkScreenSize)
+    window.addEventListener("resize", handleResize)
 
-    // Cleanup
-    return () => window.removeEventListener("resize", checkScreenSize)
-  }, [])
-
-  // Load saved preference if it exists
-  useEffect(() => {
-    const savedPreference = localStorage.getItem("sidebarPreference")
-    if (savedPreference !== null) {
-      setShowSidebar(savedPreference === "true")
-    }
-  }, [])
+    return () => window.removeEventListener("resize", handleResize)
+  }, [showSidebar])
 
   const onFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
