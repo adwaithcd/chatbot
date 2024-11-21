@@ -223,9 +223,9 @@ export default function ProfileSettings() {
               </div>
             </div>
             <div className={`my-2 h-px ${getSeparatorColor()}`} />
-            <div className="flex items-center justify-between py-2">
-              <Label className="p-2">Display Name</Label>
-              <div className="flex items-center space-x-2">
+            <div className="flex w-full items-center justify-between py-2">
+              <Label className="whitespace-nowrap p-2">Display Name</Label>
+              <div className="flex min-w-0 flex-1 items-center justify-end space-x-2">
                 {isDisplayNameEditable ? (
                   <Input
                     ref={displayNameInputRef}
@@ -233,14 +233,16 @@ export default function ProfileSettings() {
                     onChange={e => setDisplayName(e.target.value)}
                     onBlur={() => setIsDisplayNameEditable(false)}
                     placeholder="Display Name"
-                    className={`w-64 text-right ${getInputBackgroundColor()}`}
+                    className={`w-full max-w-[200px] text-right ${getInputBackgroundColor()}`}
                   />
                 ) : (
-                  <div className="w-64 p-2 text-right">{displayName}</div>
+                  <div className="min-w-0 max-w-[200px] truncate break-words p-2 text-right">
+                    {displayName}
+                  </div>
                 )}
                 <button
                   onClick={() => setIsDisplayNameEditable(true)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   <UilEditAlt size={20} />
                 </button>

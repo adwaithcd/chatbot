@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { ContentType } from "@/types"
 import { IconChevronCompactRight } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { useSelectFileHandler } from "../chat/chat-hooks/use-select-file-handler"
 import { CommandK } from "../utility/command-k"
 import SmallSidebar from "../sidebar/small-sidebar"
@@ -17,6 +17,7 @@ import { ProfileSettings } from "../utility/profile-settings"
 import { WithTooltip } from "./with-tooltip"
 
 export const SIDEBAR_WIDTH = 350
+const MOBILE_BREAKPOINT = 768
 
 interface DashboardProps {
   children: React.ReactNode
@@ -40,10 +41,39 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   // )
 
   const [showSidebar, setShowSidebar] = useState(true)
-
+  const [isMobile, setIsMobile] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const [isDragging, setIsDragging] = useState(false)
+
+  // Handle initial load and window resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const isMobileView = window.innerWidth < MOBILE_BREAKPOINT
+      setIsMobile(isMobileView)
+      // Only auto-collapse sidebar on initial load for mobile
+      if (!localStorage.getItem("sidebarPreference")) {
+        setShowSidebar(!isMobileView)
+      }
+    }
+
+    // Check initial screen size
+    checkScreenSize()
+
+    // Add resize listener
+    window.addEventListener("resize", checkScreenSize)
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkScreenSize)
+  }, [])
+
+  // Load saved preference if it exists
+  useEffect(() => {
+    const savedPreference = localStorage.getItem("sidebarPreference")
+    if (savedPreference !== null) {
+      setShowSidebar(savedPreference === "true")
+    }
+  }, [])
 
   const onFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
