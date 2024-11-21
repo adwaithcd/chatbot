@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { ContentType } from "@/types"
 import { IconChevronCompactRight } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 import { useSelectFileHandler } from "../chat/chat-hooks/use-select-file-handler"
 import { CommandK } from "../utility/command-k"
 import SmallSidebar from "../sidebar/small-sidebar"
@@ -40,6 +40,8 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   //   localStorage.getItem("showSidebar") === "true"
   // )
 
+  const isResizing = useRef(false)
+
   // Initialize sidebar state based on screen size only on first load
   const [showSidebar, setShowSidebar] = useState(() => {
     if (typeof window !== "undefined") {
@@ -60,19 +62,29 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   // Handle screen resize
   useEffect(() => {
     const handleResize = () => {
+      isResizing.current = true
       const width = window.innerWidth
       setIsMobile(width < MOBILE_BREAKPOINT)
 
-      // Only auto-collapse if sidebar is currently open
-      if (showSidebar && width < MOBILE_BREAKPOINT) {
+      // Only auto-collapse if sidebar is open AND this is a resize event
+      if (showSidebar && width < MOBILE_BREAKPOINT && isResizing.current) {
         setShowSidebar(false)
       }
+
+      // Reset the resize flag after a short delay
+      setTimeout(() => {
+        isResizing.current = false
+      }, 100)
     }
 
-    handleResize()
+    // Initial check without setting isResizing
+    const width = window.innerWidth
+    setIsMobile(width < MOBILE_BREAKPOINT)
 
+    // Add resize listener
     window.addEventListener("resize", handleResize)
 
+    // Cleanup
     return () => window.removeEventListener("resize", handleResize)
   }, [showSidebar])
 
