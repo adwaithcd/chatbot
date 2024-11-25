@@ -29,9 +29,9 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-8">
+    <div className="w-full max-w-2xl space-y-6 px-2 md:space-y-8 md:px-0">
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           1. Was the college application bot helpful for your college
           application?
         </Label>
@@ -45,7 +45,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
       </div>
 
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           2. Please explain your rating on the helpfulness of the college
           application bot. Please provide any suggestions for improvement.
         </Label>
@@ -54,13 +54,13 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("helpfulness_feedback", e.target.value)
           }
-          className="min-h-[60px] resize-none"
+          className="min-h-[100px] resize-none"
           placeholder="Enter your feedback here"
         />
       </div>
 
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           3. Do you find the college application bot trustworthy?
         </Label>
         <StarRating
@@ -73,7 +73,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
       </div>
 
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           4. Please explain your rating on the trustworthiness of the college
           application bot. Please provide any suggestions for improvement.
         </Label>
@@ -82,13 +82,13 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("trustworthiness_feedback", e.target.value)
           }
-          className="min-h-[60px] resize-none"
+          className="min-h-[100px] resize-none"
           placeholder="Enter your feedback here"
         />
       </div>
 
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           5. Do you have any additional comments or suggestions to improve the
           college application bot?
         </Label>
@@ -97,7 +97,7 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
           onChange={e =>
             handleInputChange("additional_feedback", e.target.value)
           }
-          className="min-h-[60px] resize-none"
+          className="min-h-[100px] resize-none"
           placeholder="Enter your additional feedback here"
         />
       </div>

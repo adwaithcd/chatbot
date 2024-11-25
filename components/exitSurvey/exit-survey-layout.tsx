@@ -192,23 +192,19 @@ const ExitSurveyLayout = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <div
-        className="flex h-full flex-col"
-        style={{
-          minWidth: `${SIDEBAR_WIDTH}px`,
-          maxWidth: `${SIDEBAR_WIDTH}px`,
-          width: `${SIDEBAR_WIDTH}px`
-        }}
-      >
-        <h2 className="mb-4 py-10 pl-12 pr-4 text-2xl font-semibold">
+      <div className="flex h-full w-[95px] flex-col md:w-[350px]">
+        <h2 className="mb-4 hidden py-10 pl-12 pr-4 text-2xl font-semibold md:block">
           Part Three: Exit Survey
+        </h2>
+        <h2 className="mb-4 px-3 py-10 text-2xl font-semibold md:hidden">
+          Exit Survey
         </h2>
         <ul className="space-y-2">
           {steps.map(step => (
             <li
               key={step.id}
               className={cn(
-                "p-3 pr-10 text-right",
+                "p-3 text-center md:pr-10 md:text-right",
                 currentStep === step.id && "bg-muted/50 font-bold",
                 step.id <= stepCompleted + 1
                   ? "cursor-pointer"
@@ -216,13 +212,14 @@ const ExitSurveyLayout = () => {
               )}
               onClick={() => handleStepClick(step.id)}
             >
-              {step.name}
+              <span className="hidden md:block">{step.name}</span>
+              <span className="block md:hidden">{step.id}</span>
             </li>
           ))}
         </ul>
       </div>
-      <div className="bg-muted/50 relative h-full flex-1">
-        <div className="flex h-full flex-col items-center overflow-y-auto p-8 pb-24">
+      <div className="bg-muted/50 relative h-full flex-1 overflow-hidden">
+        <div className="flex h-full flex-col items-center overflow-y-auto px-4 py-6 pb-24 md:p-8">
           {renderStepContent()}
         </div>
         <div className="fixed bottom-8 right-8">

@@ -72,9 +72,9 @@ const FollowUpForm: React.FC<FollowUpFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-8">
+    <div className="w-full max-w-2xl space-y-6 px-2 md:space-y-8 md:px-0">
       <div className="space-y-4">
-        <Label className="text-base">
+        <Label className="text-sm font-semibold md:text-base">
           6. Are you willing to be contacted for follow-up questions to discuss
           your experience with the college application bot (e.g., 15 minutes
           Zoom meeting)? If so, we will provide a gift card for your
@@ -97,7 +97,7 @@ const FollowUpForm: React.FC<FollowUpFormProps> = ({
               </Label>
               {option.value === "other" && selectedOption === "other" && (
                 <Input
-                  className="ml-2 w-[200px]"
+                  className="mt-2 w-full md:ml-2 md:mt-0 md:w-[200px]"
                   placeholder="Specify"
                   value={otherGiftCard}
                   onChange={e => handleOtherGiftCardChange(e.target.value)}
