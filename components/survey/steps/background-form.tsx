@@ -30,9 +30,12 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
   }
 
   return (
-    <form className="w-full max-w-2xl space-y-8">
+    <form className="w-full max-w-2xl space-y-6 px-2 md:space-y-8 md:px-0">
       <div className="flex items-center pb-4">
-        <Label htmlFor="application_year" className="text-base font-semibold">
+        <Label
+          htmlFor="application_year"
+          className="text-sm font-semibold md:text-base"
+        >
           1. Which year did you apply to college?
         </Label>
         <div className="ml-6 shrink-0">
@@ -48,10 +51,10 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         </div>
       </div>
       <div className="space-y-4 pb-4">
-        <Label className="text-base font-semibold">
+        <Label className="text-sm font-semibold md:text-base">
           2. Where did you apply from?
         </Label>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Input
             type="text"
             placeholder="City"
@@ -83,7 +86,10 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
         </div>
       </div>
       <div className="space-y-2 pb-4">
-        <Label htmlFor="high_school_name" className="text-base font-semibold">
+        <Label
+          htmlFor="high_school_name"
+          className="text-sm font-semibold md:text-base"
+        >
           3. What is the name of your most recent secondary/high school?
         </Label>
         <Input
@@ -95,11 +101,11 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
           className="max-w-md"
         />
       </div>
-      <div className="flex items-center pb-4">
-        <Label className="text-base font-semibold">
+      <div className="flex flex-col space-y-2 pb-4 md:flex-row md:items-center md:space-y-0">
+        <Label className="text-sm font-semibold md:text-base">
           4. What is your secondary/high school GPA?
         </Label>
-        <div className="ml-6 flex shrink-0 items-center space-x-2">
+        <div className="flex items-center space-x-2 md:ml-6 md:shrink-0">
           {/* <Input
             type="number"
             className="w-20"
@@ -121,7 +127,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
           /> */}
           <NumericFormat
             customInput={Input}
-            className="w-20"
+            className="w-16 md:w-20"
             placeholder="3.0"
             value={formData.high_school_gpa ?? ""}
             onValueChange={values => {
@@ -135,7 +141,7 @@ const BackgroundForm: React.FC<BackgroundFormProps> = ({
           <span>out of</span>
           <NumericFormat
             customInput={Input}
-            className="w-20"
+            className="w-16 md:w-20"
             placeholder="4.0"
             value={formData.max_gpa ?? ""}
             onValueChange={values => {

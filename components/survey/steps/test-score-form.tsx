@@ -76,8 +76,8 @@ const TestScoresForm: React.FC<TestScoresFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-8">
-      <Label className="text-base font-semibold">
+    <div className="w-full max-w-2xl space-y-6 px-4 md:space-y-8 md:px-0">
+      <Label className="text-sm font-semibold md:text-base">
         5. Did you take any of the following standardized tests?
       </Label>
       <p className="text-sm text-gray-500">

@@ -126,8 +126,8 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-8">
-      <Label className="text-base font-semibold">
+    <div className="w-full max-w-2xl space-y-6 px-2 md:space-y-8 md:px-0">
+      <Label className="text-sm font-semibold md:text-base">
         6. What colleges and majors have you applied to? Have you received an
         offer?
       </Label>
@@ -135,7 +135,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
         {applications.map((application, index) => (
           <div
             key={application.application_id}
-            className="grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-3"
+            className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-center"
           >
             <Input
               type="text"
@@ -148,6 +148,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
                 )
               }
               placeholder="College"
+              className="w-full"
             />
             <Input
               type="text"
@@ -160,6 +161,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
                 )
               }
               placeholder="Major"
+              className="w-full"
             />
             <Select
               value={application.offer_status || "Offer received"}
@@ -171,7 +173,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
                 )
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -180,7 +182,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
               </SelectContent>
             </Select>
 
-            <div className="flex w-8 justify-center">
+            <div className="flex justify-end md:w-8 md:justify-center">
               {index > 0 && (
                 <Button
                   type="button"
@@ -203,6 +205,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
         onClick={handleAddRecord}
         variant="ghost"
         disabled={!canAddNewRecord()}
+        className="w-full md:w-auto"
       >
         + Add a new record
       </Button>
@@ -210,7 +213,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
       <div className="space-y-2 pb-4">
         <Label
           htmlFor="current_enrolled_program"
-          className="text-base font-semibold"
+          className="text-sm font-semibold md:text-base"
         >
           7. Which program are you currently enrolled in at ASU?
         </Label>
@@ -218,7 +221,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
           type="text"
           id="current_enrolled_program"
           name="current_enrolled_program"
-          className="max-w-sm"
+          className="w-full md:max-w-sm"
           value={surveyFormData.current_enrolled_program || ""}
           onChange={handleSurveyInputChange}
         />
@@ -227,7 +230,7 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
       <div className="space-y-2 pb-4">
         <Label
           htmlFor="reason_for_choosing_asu"
-          className="text-base font-semibold"
+          className="text-sm font-semibold md:text-base"
         >
           8. Why did you choose ASU over the other options?
         </Label>
@@ -235,28 +238,11 @@ const ApplicationHistoryForm: React.FC<ApplicationHistoryFormProps> = ({
           type="text"
           id="reason_for_choosing_asu"
           name="reason_for_choosing_asu"
-          className="max-w-sm"
+          className="w-full md:max-w-sm"
           value={surveyFormData.reason_for_choosing_asu || ""}
           onChange={handleSurveyInputChange}
         />
       </div>
-
-      {/* {showDeleteConfirmation && (
-        <div className="bg-background fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-            <h3 className="mb-4 text-lg font-semibold">Confirm Deletion</h3>
-            <p className="mb-4">Are you sure you want to delete this college application?</p>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={handleCancelDelete}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={handleDeleteConfirmation}>
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       <Dialog
         open={showDeleteConfirmation}
