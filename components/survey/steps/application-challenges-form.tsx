@@ -131,18 +131,18 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-8">
+    <div className="w-full max-w-2xl space-y-6 px-2 md:space-y-8 md:px-0">
       <div className="space-y-4">
-        <Label className="text-base font-semibold">
+        <Label className="text-sm font-semibold md:text-base">
           11. What challenges did you encounter in your college application
           process?
         </Label>
 
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {challenges.map(challenge => (
             <div
               key={challenge.challenge_id}
-              className="flex items-center space-x-4"
+              className="flex items-start space-x-3 md:items-center md:space-x-4"
             >
               <Checkbox
                 checked={challenge.isChecked}
@@ -152,12 +152,14 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
                     checked as boolean
                   )
                 }
-                className="size-5"
+                className="mt-1 size-4 md:mt-0 md:size-5"
               />
               {defaultChallenges.some(
                 dc => dc.challenge === challenge.challenge
               ) ? (
-                <span className="w-2/3">{challenge.challenge}</span>
+                <span className="flex-1 text-sm md:text-base">
+                  {challenge.challenge}
+                </span>
               ) : challenge.isChecked ? (
                 <Input
                   type="text"
@@ -168,11 +170,13 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
                       e.target.value
                     )
                   }
-                  className="w-2/3 border-none focus:outline-none"
+                  className="flex-1 border-none text-sm focus:outline-none md:text-base"
                   placeholder="Enter challenge"
                 />
               ) : (
-                <span className="w-2/3">{challenge.challenge}</span>
+                <span className="flex-1 text-sm md:text-base">
+                  {challenge.challenge}
+                </span>
               )}
             </div>
           ))}
@@ -181,7 +185,7 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
             type="button"
             onClick={handleAddNewChallenge}
             variant="ghost"
-            className="mt-4"
+            className="mt-2 h-8 text-sm md:h-10 md:text-base"
             disabled={isAddNewChallengeDisabled()}
           >
             + Add a new challenge
@@ -189,24 +193,29 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
+      <div className="space-y-4 pt-4 md:pt-6">
+        <Label className="block text-sm font-semibold md:text-base">
           12. In your opinion, what are the most important factors that affect
           your application outcomes?
         </Label>
 
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {factors.map(factor => (
-            <div key={factor.factor_id} className="flex items-center space-x-4">
+            <div
+              key={factor.factor_id}
+              className="flex items-start space-x-3 md:items-center md:space-x-4"
+            >
               <Checkbox
                 checked={factor.isChecked}
                 onCheckedChange={checked =>
                   handleFactorCheckChange(factor.factor_id, checked as boolean)
                 }
-                className="size-5"
+                className="mt-1 size-4 md:mt-0 md:size-5"
               />
               {defaultFactors.some(df => df.factor === factor.factor) ? (
-                <span className="w-2/3">{factor.factor}</span>
+                <span className="flex-1 text-sm md:text-base">
+                  {factor.factor}
+                </span>
               ) : factor.isChecked ? (
                 <Input
                   type="text"
@@ -214,11 +223,13 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
                   onChange={e =>
                     handleFactorChange(factor.factor_id, e.target.value)
                   }
-                  className="w-2/3 border-none focus:outline-none"
+                  className="flex-1 border-none text-sm focus:outline-none md:text-base"
                   placeholder="Enter factor"
                 />
               ) : (
-                <span className="w-2/3">{factor.factor}</span>
+                <span className="flex-1 text-sm md:text-base">
+                  {factor.factor}
+                </span>
               )}
             </div>
           ))}
@@ -227,7 +238,7 @@ const ChallengesForm: React.FC<ChallengesFormProps> = ({
             type="button"
             onClick={handleAddNewFactor}
             variant="ghost"
-            className="mt-4"
+            className="mt-2 h-8 text-sm md:h-10 md:text-base"
             disabled={isAddNewFactorDisabled()}
           >
             + Add a new factor
