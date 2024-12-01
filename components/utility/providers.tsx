@@ -7,7 +7,7 @@ import { FC } from "react"
 
 export const Providers: FC<ThemeProviderProps> = ({ children, ...props }) => {
   return (
-    <NextThemesProvider {...props}>
+    <NextThemesProvider {...props} themes={["light", "dark", "beige"]}>
       <TooltipProvider>{children}</TooltipProvider>
     </NextThemesProvider>
   )

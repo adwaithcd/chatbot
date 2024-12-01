@@ -10,6 +10,7 @@ import { Inter } from "next/font/google"
 import { cookies } from "next/headers"
 import { ReactNode } from "react"
 import "./globals.css"
+import { cn } from "@/lib/utils"
 
 const inter = Inter({ subsets: ["latin"] })
 const APP_NAME = "EDUCHAT"
@@ -87,9 +88,13 @@ export default async function RootLayout({
   const { t, resources } = await initTranslations(locale, i18nNamespaces)
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn(inter.className, "light beige dark")}
+      suppressHydrationWarning
+    >
       <body className={inter.className}>
-        <Providers attribute="class" defaultTheme="dark">
+        <Providers attribute="class" defaultTheme="beige">
           <TranslationsProvider
             namespaces={i18nNamespaces}
             locale={locale}
