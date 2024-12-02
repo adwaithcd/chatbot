@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const { readable, writable } = new TransformStream()
     const writer = writable.getWriter()
     const encoder = new TextEncoder()
-    const decoder = new TextDecoder("utf-8")
+    const decoder = new TextDecoder()
 
     // Process the stream
     const processStream = async () => {
@@ -63,18 +63,21 @@ export async function POST(request: Request) {
               console.log("****line*****", line)
               const jsonResponse = JSON.parse(line)
 
-              // if(jsonResponse.next
-              //   && ["GeneralAdvisor", "AdmissionAdvisor", "FinancialCostAdvisor"].includes(jsonResponse.next)
-              //   && !jsonResponse.message) {
-              //     const advisorMessage = JSON.stringify({
-              //       type: "advisor_details",
-              //       advisor: jsonResponse.next
-              //     }) + "\n"
-              //     await writer.write(encoder.encode(advisorMessage))
-              //     continue
-              // }
-              if (jsonResponse.message && jsonResponse.message.trim()) {
+              if (
+                jsonResponse.next &&
+                [
+                  "GeneralAdvisor",
+                  "AdmissionAdvisor",
+                  "FinancialCostAdvisor"
+                ].includes(jsonResponse.next) &&
+                !jsonResponse.message
+              ) {
+                console.log("****next*****", jsonResponse.next)
+                await writer.write(encoder.encode(jsonResponse.next))
+                continue
+              } else if (jsonResponse.message && jsonResponse.message.trim()) {
                 // Only send the message content if it exists
+                console.log("****message*****", jsonResponse.message)
                 await writer.write(encoder.encode(jsonResponse.message.trim()))
               }
             } catch (e) {

@@ -9,6 +9,7 @@ interface MessageMarkdownProps {
 }
 
 export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content }) => {
+  const escapedContent = content.replace(/\$(\d)/g, "\\$$$1")
   return (
     <MessageMarkdownMemoized
       className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 min-w-full space-y-6 break-words"
@@ -59,7 +60,7 @@ export const MessageMarkdown: FC<MessageMarkdownProps> = ({ content }) => {
         }
       }}
     >
-      {content}
+      {escapedContent}
     </MessageMarkdownMemoized>
   )
 }

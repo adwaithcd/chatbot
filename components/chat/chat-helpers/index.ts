@@ -314,34 +314,56 @@ export const processResponse = async (
   let contentToAdd = ""
 
   if (response.body) {
+    // console.log("***got response body***")
     await consumeReadableStream(
       response.body,
       chunk => {
-        setFirstTokenReceived(true)
-        setToolInUse("none")
-
         try {
-          contentToAdd = isHosted
-            ? chunk
-            : // Ollama's streaming endpoint returns new-line separated JSON
-              // objects. A chunk may have more than one of these objects, so we
-              // need to split the chunk by new-lines and handle each one
-              // separately.
-              chunk
-                .trimEnd()
-                .split("\n")
-                .reduce(
-                  (acc, line) => acc + JSON.parse(line).message.content,
-                  ""
-                )
+          if (isHosted) {
+            if (
+              [
+                "GeneralAdvisor",
+                "AdmissionAdvisor",
+                "FinancialCostAdvisor"
+              ].includes(chunk)
+            ) {
+              setApplicationAdvisorDisplayMessage(chunk)
+              console.log("****chunk****", chunk)
+            } else {
+              setApplicationAdvisorDisplayMessage(null)
+              contentToAdd = chunk
+            }
+          } else {
+            setFirstTokenReceived(true)
+            setToolInUse("none")
+            contentToAdd = chunk
+              .trimEnd()
+              .split("\n")
+              .reduce((acc, line) => acc + JSON.parse(line).message.content, "")
+          }
+          // contentToAdd = isHosted
+          //   ? chunk
+          //   : // Ollama's streaming endpoint returns new-line separated JSON
+          //     // objects. A chunk may have more than one of these objects, so we
+          //     // need to split the chunk by new-lines and handle each one
+          //     // separately.
+          //     chunk
+          //       .trimEnd()
+          //       .split("\n")
+          //       .reduce(
+          //         (acc, line) => acc + JSON.parse(line).message.content,
+          //         ""
+          //       )
           fullText += contentToAdd
         } catch (error) {
           console.error("Error parsing JSON:", error)
         }
 
+        console.log("Content before setting chat message:", contentToAdd)
         setChatMessages(prev =>
           prev.map(chatMessage => {
             if (chatMessage.message.id === lastChatMessage.message.id) {
+              console.log("Final content being set:", fullText)
               const updatedChatMessage: ChatMessage = {
                 message: {
                   ...chatMessage.message,
