@@ -1,6 +1,9 @@
+import { ChatbotUIContext } from "@/context/context"
 import { ChatSettings } from "@/types"
+import { StreamingTextResponse } from "ai"
 
 const APPLICATION_CHATBOT_URL = process.env.APPLICATION_CHATBOT_URL
+export const runtime = "edge"
 
 export async function POST(request: Request) {
   const json = await request.json()
@@ -33,11 +36,65 @@ export async function POST(request: Request) {
       throw new Error(`Application Chatbot API error: ${response.status}`)
     }
 
-    const data = await response.json()
+    // Create streams to transform the response
+    const { readable, writable } = new TransformStream()
+    const writer = writable.getWriter()
+    const encoder = new TextEncoder()
+    const decoder = new TextDecoder("utf-8")
 
-    return new Response(data.message.trim(), {
-      headers: { "Content-Type": "text/plain" }
-    })
+    // Process the stream
+    const processStream = async () => {
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error("No response body")
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          // Decode the chunk and process line by line
+          const chunk = decoder.decode(value)
+          const lines = chunk.split("\n")
+
+          for (const line of lines) {
+            if (!line.trim()) continue
+
+            try {
+              console.log("****line*****", line)
+              const jsonResponse = JSON.parse(line)
+
+              // if(jsonResponse.next
+              //   && ["GeneralAdvisor", "AdmissionAdvisor", "FinancialCostAdvisor"].includes(jsonResponse.next)
+              //   && !jsonResponse.message) {
+              //     const advisorMessage = JSON.stringify({
+              //       type: "advisor_details",
+              //       advisor: jsonResponse.next
+              //     }) + "\n"
+              //     await writer.write(encoder.encode(advisorMessage))
+              //     continue
+              // }
+              if (jsonResponse.message && jsonResponse.message.trim()) {
+                // Only send the message content if it exists
+                await writer.write(encoder.encode(jsonResponse.message.trim()))
+              }
+            } catch (e) {
+              if (line.trim()) {
+                await writer.write(encoder.encode(line))
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock()
+        await writer.close()
+      }
+    }
+
+    // Start processing the stream
+    processStream().catch(console.error)
+
+    // Return streaming response
+    return new Response(readable)
   } catch (error: any) {
     console.error("Application Chatbot Error:", error)
     return new Response(

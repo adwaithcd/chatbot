@@ -160,7 +160,10 @@ export const handleLocalChat = async (
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>,
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  setToolInUse: React.Dispatch<React.SetStateAction<string>>
+  setToolInUse: React.Dispatch<React.SetStateAction<string>>,
+  setApplicationAdvisorDisplayMessage: React.Dispatch<
+    React.SetStateAction<string | null>
+  >
 ) => {
   const formattedMessages = await buildFinalMessages(payload, profile, [])
 
@@ -189,7 +192,8 @@ export const handleLocalChat = async (
     newAbortController,
     setFirstTokenReceived,
     setChatMessages,
-    setToolInUse
+    setToolInUse,
+    setApplicationAdvisorDisplayMessage
   )
 }
 
@@ -206,7 +210,10 @@ export const handleHostedChat = async (
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
-  chatId: String
+  chatId: String,
+  setApplicationAdvisorDisplayMessage: React.Dispatch<
+    React.SetStateAction<string | null>
+  >
 ) => {
   const provider =
     modelData.provider === "openai" && profile.use_azure_openai
@@ -254,7 +261,8 @@ export const handleHostedChat = async (
     newAbortController,
     setFirstTokenReceived,
     setChatMessages,
-    setToolInUse
+    setToolInUse,
+    setApplicationAdvisorDisplayMessage
   )
 }
 
@@ -297,7 +305,10 @@ export const processResponse = async (
   controller: AbortController,
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  setToolInUse: React.Dispatch<React.SetStateAction<string>>
+  setToolInUse: React.Dispatch<React.SetStateAction<string>>,
+  setApplicationAdvisorDisplayMessage: React.Dispatch<
+    React.SetStateAction<string | null>
+  >
 ) => {
   let fullText = ""
   let contentToAdd = ""

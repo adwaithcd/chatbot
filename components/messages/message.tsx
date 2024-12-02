@@ -89,7 +89,8 @@ export const Message: FC<MessageProps> = ({
     toolInUse,
     files,
     models,
-    setChatMessages
+    setChatMessages,
+    applicationAdvisorDisplayMessage
   } = useContext(ChatbotUIContext)
 
   const { theme } = useTheme()
@@ -503,7 +504,19 @@ export const Message: FC<MessageProps> = ({
                   switch (toolInUse) {
                     case "none":
                       return (
-                        <IconCircleFilled className="animate-pulse" size={20} />
+                        <>
+                          {applicationAdvisorDisplayMessage ? (
+                            <div className="text-lg font-bold">
+                              {applicationAdvisorDisplayMessage}
+                            </div>
+                          ) : (
+                            <IconCircleFilled
+                              className="animate-pulse"
+                              size={20}
+                            />
+                          )}
+                        </>
+                        // <IconCircleFilled className="animate-pulse" size={20} />
                       )
                     case "retrieval":
                       return (

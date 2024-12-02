@@ -66,7 +66,8 @@ export const useChatHandler = () => {
     models,
     isPromptPickerOpen,
     isFilePickerOpen,
-    isToolPickerOpen
+    isToolPickerOpen,
+    setApplicationAdvisorDisplayMessage
   } = useContext(ChatbotUIContext)
 
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
@@ -318,7 +319,8 @@ export const useChatHandler = () => {
           newAbortController,
           setFirstTokenReceived,
           setChatMessages,
-          setToolInUse
+          setToolInUse,
+          setApplicationAdvisorDisplayMessage
         )
       } else {
         if (modelData!.provider === "ollama") {
@@ -332,7 +334,8 @@ export const useChatHandler = () => {
             setIsGenerating,
             setFirstTokenReceived,
             setChatMessages,
-            setToolInUse
+            setToolInUse,
+            setApplicationAdvisorDisplayMessage
           )
         } else {
           generatedText = await handleHostedChat(
@@ -348,7 +351,8 @@ export const useChatHandler = () => {
             setFirstTokenReceived,
             setChatMessages,
             setToolInUse,
-            currentChat.id
+            currentChat.id,
+            setApplicationAdvisorDisplayMessage
           )
         }
       }

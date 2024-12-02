@@ -125,6 +125,10 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
   // TOOL STORE
   const [selectedTools, setSelectedTools] = useState<Tables<"tools">[]>([])
   const [toolInUse, setToolInUse] = useState<string>("none")
+  const [
+    applicationAdvisorDisplayMessage,
+    setApplicationAdvisorDisplayMessage
+  ] = useState<string | null>(null)
 
   // SURVEY STORE
   const [surveyResponse, setSurveyResponse] =
@@ -335,6 +339,8 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
         setSelectedTools,
         toolInUse,
         setToolInUse,
+        applicationAdvisorDisplayMessage,
+        setApplicationAdvisorDisplayMessage,
 
         // SURVEY STORE
         surveyResponse,

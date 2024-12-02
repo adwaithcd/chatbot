@@ -139,6 +139,8 @@ interface ChatbotUIContext {
   setSelectedTools: Dispatch<SetStateAction<Tables<"tools">[]>>
   toolInUse: string
   setToolInUse: Dispatch<SetStateAction<string>>
+  applicationAdvisorDisplayMessage: string | null
+  setApplicationAdvisorDisplayMessage: Dispatch<SetStateAction<string | null>>
 
   // SURVEY STORE
   surveyResponse: Tables<"survey_responses"> | null
@@ -275,6 +277,8 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
   setSelectedTools: () => {},
   toolInUse: "none",
   setToolInUse: () => {},
+  applicationAdvisorDisplayMessage: null,
+  setApplicationAdvisorDisplayMessage: () => {},
 
   // SURVEY STORE
 
