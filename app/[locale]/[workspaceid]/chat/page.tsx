@@ -145,7 +145,7 @@ export default function ChatPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div
-                              className="bg-background/100 hover:bg-secondary h-28 cursor-pointer items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
+                              className="bg-background hover:bg-background/50 h-28 cursor-pointer items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
                               onClick={() => recommendedPromptClick(prompt)}
                             >
                               <p
