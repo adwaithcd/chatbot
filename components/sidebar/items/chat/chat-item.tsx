@@ -56,7 +56,7 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
   )?.base64
 
   const getStarIconClasses = () => {
-    return theme === "dark" ? "text-white fill-white" : "text-black fill-black"
+    return "text-background/100 fill-foreground"
   }
 
   return (
@@ -75,7 +75,7 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           <div className="truncate text-sm">{chat.name}</div>
           {chat.is_favorite && (
             <IconStar
-              className={`ml-1 shrink-0 ${getStarIconClasses()}`}
+              className={"text-background fill-foreground ml-1 shrink-0"}
               size={16}
             />
           )}

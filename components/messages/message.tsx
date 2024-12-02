@@ -418,17 +418,6 @@ export const Message: FC<MessageProps> = ({
 
   const isUser = message.role === "user"
 
-  const getBackgroundColor = () => {
-    switch (theme) {
-      case "light":
-        return "bg-white"
-      case "dark":
-        return "bg-secondary"
-      default:
-        return "bg-beige-50"
-    }
-  }
-
   return (
     <div
       className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}
@@ -481,7 +470,7 @@ export const Message: FC<MessageProps> = ({
           className={cn(
             "grow space-y-3",
             isUser ? "rounded-lg px-4 py-3" : "pt-1",
-            isUser && getBackgroundColor()
+            isUser && "bg-background"
           )}
         >
           <div className="space-y-3">

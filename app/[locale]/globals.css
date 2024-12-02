@@ -94,34 +94,34 @@
   }
 
   .beige {
-    --background: 53 44% 92%; /* F4F2E3*/
+    --background: 53 44% 90%; /* F4F2E3*/
     --foreground: 0 0% 3.9%;
 
-    --muted: 45 67% 98%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 45 67% 100%;
+    --muted-foreground: 43 12% 40%;
 
-    --popover: 39 33% 98%;
+    --popover: 53 44% 82%;
     --popover-foreground: 0 0% 3.9%;
 
-    --card: 39 33% 98%;
+    --card: 53 44% 82%;
     --card-foreground: 0 0% 3.9%;
 
-    --border: 45 67% 98%; 
-    --input: 45 67% 98%;
+    --border: 43 20% 80%; 
+    --input: 43 20% 80%;
 
     --primary: 43 60% 68%; 
-    --primary-foreground: 0 0% 9%;
+    --primary-foreground: 45 67% 98%;
 
-    --secondary: 20 5% 96%; /* F4F2F3 */
-    --secondary-foreground: 43 60% 68%;
+    --secondary: 43 30% 92%; /* F4F2F3 */
+    --secondary-foreground: 43 35% 45%;
 
-    --accent: 20 5% 96%;
-    --accent-foreground: 43 60% 68%;
+    --accent: 43 30% 92%;
+    --accent-foreground: 43 35% 45%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --ring: 43 13% 64%;
+    --ring: 43 20% 80%;
 
     --radius: 0.5rem;
   }

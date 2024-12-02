@@ -138,28 +138,6 @@ export default function ProfileSettings() {
     }
   }
 
-  const getInputBackgroundColor = () => {
-    switch (theme) {
-      case "light":
-        return "bg-white"
-      case "dark":
-        return "bg-gray-700"
-      default:
-        return "bg-beige-50"
-    }
-  }
-
-  const getSeparatorColor = () => {
-    switch (theme) {
-      case "light":
-        return "bg-gray-200"
-      case "dark":
-        return "bg-gray-900"
-      default:
-        return "bg-beige-200"
-    }
-  }
-
   return (
     <div
       className={`flex min-h-screen items-center justify-center ${getBackgroundColor()} theme-transition`}
@@ -175,7 +153,9 @@ export default function ProfileSettings() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">General</h2>
           <div
-            className={`flex items-center justify-between rounded p-6 px-8 ${getInputBackgroundColor()}`}
+            className={
+              "bg-background flex items-center justify-between rounded p-6 px-8"
+            }
           >
             <Label className="p-2">Theme</Label>
             <select
@@ -192,9 +172,7 @@ export default function ProfileSettings() {
 
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Account</h2>
-          <div
-            className={`flex flex-col rounded p-6 px-8 ${getInputBackgroundColor()}`}
-          >
+          <div className={"bg-background flex flex-col rounded p-6 px-8"}>
             <div className="flex items-center justify-between py-2">
               <Label className="p-2">Avatar</Label>
               <div className="flex items-center space-x-2">
@@ -212,7 +190,7 @@ export default function ProfileSettings() {
                 )}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="text-foreground hover:text-foreground-700"
                 >
                   <UilEditAlt size={20} />
                 </button>
@@ -225,7 +203,7 @@ export default function ProfileSettings() {
                 />
               </div>
             </div>
-            <div className={`my-2 h-px ${getSeparatorColor()}`} />
+            <div className={"bg-border my-2 h-px"} />
             <div className="flex w-full items-center justify-between py-2">
               <Label className="whitespace-nowrap p-2">Display Name</Label>
               <div className="flex min-w-0 flex-1 items-center justify-end space-x-2">
@@ -236,7 +214,7 @@ export default function ProfileSettings() {
                     onChange={e => setDisplayName(e.target.value)}
                     onBlur={() => setIsDisplayNameEditable(false)}
                     placeholder="Display Name"
-                    className={`w-full max-w-[200px] text-right ${getInputBackgroundColor()}`}
+                    className={"bg-background w-full max-w-[200px] text-right"}
                   />
                 ) : (
                   <div className="min-w-0 max-w-[200px] truncate break-words p-2 text-right">
@@ -245,18 +223,16 @@ export default function ProfileSettings() {
                 )}
                 <button
                   onClick={() => setIsDisplayNameEditable(true)}
-                  className="shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="text-foreground hover:text-foreground-700 shrink-0"
                 >
                   <UilEditAlt size={20} />
                 </button>
               </div>
             </div>
-            <div className={`my-2 h-px ${getSeparatorColor()}`} />
+            <div className={"bg-border my-2 h-px"} />
             <div className="flex items-center justify-between py-2">
               <Label className="p-2">Username</Label>
-              <div
-                className={`w-64 p-2 text-right ${getInputBackgroundColor()} rounded`}
-              >
+              <div className={"bg-background w-64 rounded p-2 text-right"}>
                 {username || ""}
               </div>
             </div>

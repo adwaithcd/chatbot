@@ -21,7 +21,7 @@ export default function HomePage() {
       <div className="mt-2 text-4xl font-bold">EDUCHAT</div>
 
       <Link
-        className="border-secondary mt-4 flex w-[200px] items-center justify-center rounded-md border p-2 font-semibold"
+        className="mt-4 flex w-[200px] items-center justify-center rounded-md border p-2 font-semibold"
         href="/login"
       >
         Start Chatting

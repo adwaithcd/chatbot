@@ -137,7 +137,7 @@ export default function ChatPage() {
                   ? [...Array(3)].map((_, index) => (
                       <div
                         key={index}
-                        className="bg-secondary flex h-32 animate-pulse items-start justify-start rounded-lg p-6"
+                        className="bg-background flex h-32 animate-pulse items-start justify-start rounded-lg p-6"
                       />
                     ))
                   : recommendedPrompts.slice(0, 3).map((prompt, index) => (
@@ -145,7 +145,7 @@ export default function ChatPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div
-                              className="bg-secondary/100 hover:bg-secondary h-28 cursor-pointer items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
+                              className="bg-background/100 hover:bg-secondary h-28 cursor-pointer items-center justify-center overflow-hidden rounded-lg p-4 text-left text-base transition-colors duration-200"
                               onClick={() => recommendedPromptClick(prompt)}
                             >
                               <p
