@@ -495,8 +495,9 @@ export const Message: FC<MessageProps> = ({
                       return (
                         <>
                           {applicationAdvisorDisplayMessage ? (
-                            <div className="text-lg font-bold">
-                              {applicationAdvisorDisplayMessage}
+                            <div className="text-base ">
+                              {"Calling " + applicationAdvisorDisplayMessage}
+                              <span className="animate-dots"></span>
                             </div>
                           ) : (
                             <IconCircleFilled

@@ -67,6 +67,7 @@ export const useChatHandler = () => {
     isPromptPickerOpen,
     isFilePickerOpen,
     isToolPickerOpen,
+    applicationAdvisorDisplayMessage,
     setApplicationAdvisorDisplayMessage
   } = useContext(ChatbotUIContext)
 
@@ -320,6 +321,7 @@ export const useChatHandler = () => {
           setFirstTokenReceived,
           setChatMessages,
           setToolInUse,
+          applicationAdvisorDisplayMessage,
           setApplicationAdvisorDisplayMessage
         )
       } else {
@@ -335,6 +337,7 @@ export const useChatHandler = () => {
             setFirstTokenReceived,
             setChatMessages,
             setToolInUse,
+            applicationAdvisorDisplayMessage,
             setApplicationAdvisorDisplayMessage
           )
         } else {
@@ -352,6 +355,7 @@ export const useChatHandler = () => {
             setChatMessages,
             setToolInUse,
             currentChat.id,
+            applicationAdvisorDisplayMessage,
             setApplicationAdvisorDisplayMessage
           )
         }

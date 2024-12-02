@@ -72,12 +72,10 @@ export async function POST(request: Request) {
                 ].includes(jsonResponse.next) &&
                 !jsonResponse.message
               ) {
-                console.log("****next*****", jsonResponse.next)
                 await writer.write(encoder.encode(jsonResponse.next))
                 continue
               } else if (jsonResponse.message && jsonResponse.message.trim()) {
                 // Only send the message content if it exists
-                console.log("****message*****", jsonResponse.message)
                 await writer.write(encoder.encode(jsonResponse.message.trim()))
               }
             } catch (e) {

@@ -161,6 +161,7 @@ export const handleLocalChat = async (
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
+  applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
   >
@@ -193,6 +194,7 @@ export const handleLocalChat = async (
     setFirstTokenReceived,
     setChatMessages,
     setToolInUse,
+    applicationAdvisorDisplayMessage,
     setApplicationAdvisorDisplayMessage
   )
 }
@@ -211,6 +213,7 @@ export const handleHostedChat = async (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
   chatId: String,
+  applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
   >
@@ -262,6 +265,7 @@ export const handleHostedChat = async (
     setFirstTokenReceived,
     setChatMessages,
     setToolInUse,
+    applicationAdvisorDisplayMessage,
     setApplicationAdvisorDisplayMessage
   )
 }
@@ -306,6 +310,7 @@ export const processResponse = async (
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
+  applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
   >
@@ -328,7 +333,6 @@ export const processResponse = async (
               ].includes(chunk)
             ) {
               setApplicationAdvisorDisplayMessage(chunk)
-              console.log("****chunk****", chunk)
             } else {
               setApplicationAdvisorDisplayMessage(null)
               contentToAdd = chunk
@@ -359,11 +363,9 @@ export const processResponse = async (
           console.error("Error parsing JSON:", error)
         }
 
-        console.log("Content before setting chat message:", contentToAdd)
         setChatMessages(prev =>
           prev.map(chatMessage => {
             if (chatMessage.message.id === lastChatMessage.message.id) {
-              console.log("Final content being set:", fullText)
               const updatedChatMessage: ChatMessage = {
                 message: {
                   ...chatMessage.message,

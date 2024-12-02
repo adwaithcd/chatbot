@@ -135,3 +135,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.animate-dots::after {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots{
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60% { content: '...'; }
+  80% { content: '....'; }
+  100% { content: '.....'; }
+}
