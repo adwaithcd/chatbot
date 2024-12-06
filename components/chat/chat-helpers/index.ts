@@ -336,7 +336,6 @@ export const processResponse = async (
   let contentToAdd = ""
 
   if (response.body) {
-    // console.log("***got response body***")
     await consumeReadableStream(
       response.body,
       chunk => {
@@ -372,6 +371,8 @@ export const processResponse = async (
                 return newState
               })
             } else {
+              setFirstTokenReceived(true)
+              setToolInUse("none")
               setApplicationAdvisorDisplayMessage(null)
               setAdvisorDetails(prev => {
                 return (
