@@ -29,6 +29,7 @@ import { MessageMarkdown } from "./message-markdown"
 import { UilRobot, UilEnter } from "@iconscout/react-unicons"
 import { useTheme } from "next-themes"
 import { updateMessage } from "@/db/messages"
+import AdvisorStatus from "./message-loading-advisor"
 
 const ICON_SIZE = 32
 
@@ -90,7 +91,8 @@ export const Message: FC<MessageProps> = ({
     files,
     models,
     setChatMessages,
-    applicationAdvisorDisplayMessage
+    applicationAdvisorDisplayMessage,
+    advisorDetails
   } = useContext(ChatbotUIContext)
 
   const { theme } = useTheme()
@@ -493,19 +495,25 @@ export const Message: FC<MessageProps> = ({
                   switch (toolInUse) {
                     case "none":
                       return (
-                        <>
-                          {applicationAdvisorDisplayMessage ? (
-                            <div className="text-base ">
-                              {"Calling " + applicationAdvisorDisplayMessage}
-                              <span className="animate-dots"></span>
-                            </div>
-                          ) : (
-                            <IconCircleFilled
-                              className="animate-pulse"
-                              size={20}
-                            />
-                          )}
-                        </>
+                        <AdvisorStatus
+                          advisors={advisorDetails || []}
+                          currentAdvisor={applicationAdvisorDisplayMessage}
+                          showLoading={true}
+                        />
+
+                        // <>
+                        //   {applicationAdvisorDisplayMessage ? (
+                        //     <div className="text-base ">
+                        //       {"Calling " + applicationAdvisorDisplayMessage}
+                        //       <span className="animate-dots"></span>
+                        //     </div>
+                        //   ) : (
+                        //     <IconCircleFilled
+                        //       className="animate-pulse"
+                        //       size={20}
+                        //     />
+                        //   )}
+                        // </>
                         // <IconCircleFilled className="animate-pulse" size={20} />
                       )
                     case "retrieval":

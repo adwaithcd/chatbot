@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/lib/supabase/browser-client"
 import { Tables } from "@/supabase/types"
 import {
+  AdvisorDetails,
   ChatFile,
   ChatMessage,
   ChatSettings,
@@ -129,6 +130,9 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     applicationAdvisorDisplayMessage,
     setApplicationAdvisorDisplayMessage
   ] = useState<string | null>(null)
+  const [advisorDetails, setAdvisorDetails] = useState<AdvisorDetails[] | null>(
+    []
+  )
 
   // SURVEY STORE
   const [surveyResponse, setSurveyResponse] =
@@ -341,6 +345,8 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
         setToolInUse,
         applicationAdvisorDisplayMessage,
         setApplicationAdvisorDisplayMessage,
+        advisorDetails,
+        setAdvisorDetails,
 
         // SURVEY STORE
         surveyResponse,

@@ -234,7 +234,7 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
             Drag and rank the important factors here
           </h3>
           <div
-            className="bg-muted min-h-[120px] rounded-lg border p-4"
+            className="bg-muted/10 min-h-[120px] rounded-lg border p-4"
             onDragOver={handleDragOver}
             onDrop={e => handleDropOnImportant(e)}
           >
@@ -263,7 +263,7 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
             Drag the unimportant Factors here
           </h3>
           <div
-            className="bg-muted min-h-[120px] rounded-lg border p-4"
+            className="bg-muted/10 min-h-[120px] rounded-lg border p-4"
             onDragOver={handleDragOver}
             onDrop={handleDropOnUnimportant}
           >

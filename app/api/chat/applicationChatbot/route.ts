@@ -47,6 +47,8 @@ export async function POST(request: Request) {
       const reader = response.body?.getReader()
       if (!reader) throw new Error("No response body")
 
+      let previousResponseMessage = ""
+
       try {
         while (true) {
           const { done, value } = await reader.read()
@@ -74,8 +76,14 @@ export async function POST(request: Request) {
               ) {
                 await writer.write(encoder.encode(jsonResponse.next))
                 continue
-              } else if (jsonResponse.message && jsonResponse.message.trim()) {
-                // Only send the message content if it exists
+              }
+              if (
+                jsonResponse.message &&
+                jsonResponse.message.trim() &&
+                jsonResponse.message !== previousResponseMessage &&
+                jsonResponse.message !== "I don't know."
+              ) {
+                previousResponseMessage = jsonResponse.message
                 await writer.write(encoder.encode(jsonResponse.message.trim()))
               }
             } catch (e) {

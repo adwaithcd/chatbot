@@ -6,7 +6,8 @@ import {
   LLM,
   MessageImage,
   OpenRouterLLM,
-  WorkspaceImage
+  WorkspaceImage,
+  AdvisorDetails
 } from "@/types"
 import { AssistantImage } from "@/types/images/assistant-image"
 import { VALID_ENV_KEYS } from "@/types/valid-keys"
@@ -141,6 +142,8 @@ interface ChatbotUIContext {
   setToolInUse: Dispatch<SetStateAction<string>>
   applicationAdvisorDisplayMessage: string | null
   setApplicationAdvisorDisplayMessage: Dispatch<SetStateAction<string | null>>
+  advisorDetails: AdvisorDetails[] | null
+  setAdvisorDetails: Dispatch<SetStateAction<AdvisorDetails[] | null>>
 
   // SURVEY STORE
   surveyResponse: Tables<"survey_responses"> | null
@@ -279,6 +282,8 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
   setToolInUse: () => {},
   applicationAdvisorDisplayMessage: null,
   setApplicationAdvisorDisplayMessage: () => {},
+  advisorDetails: [],
+  setAdvisorDetails: () => {},
 
   // SURVEY STORE
 

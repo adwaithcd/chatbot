@@ -17,7 +17,8 @@ import {
   ChatPayload,
   ChatSettings,
   LLM,
-  MessageImage
+  MessageImage,
+  AdvisorDetails
 } from "@/types"
 import React from "react"
 import { toast } from "sonner"
@@ -164,6 +165,10 @@ export const handleLocalChat = async (
   applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
+  >,
+  advisorDetails: AdvisorDetails[] | null,
+  setAdvisorDetails: React.Dispatch<
+    React.SetStateAction<AdvisorDetails[] | null>
   >
 ) => {
   const formattedMessages = await buildFinalMessages(payload, profile, [])
@@ -195,7 +200,9 @@ export const handleLocalChat = async (
     setChatMessages,
     setToolInUse,
     applicationAdvisorDisplayMessage,
-    setApplicationAdvisorDisplayMessage
+    setApplicationAdvisorDisplayMessage,
+    advisorDetails,
+    setAdvisorDetails
   )
 }
 
@@ -216,6 +223,10 @@ export const handleHostedChat = async (
   applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
+  >,
+  advisorDetails: AdvisorDetails[] | null,
+  setAdvisorDetails: React.Dispatch<
+    React.SetStateAction<AdvisorDetails[] | null>
   >
 ) => {
   const provider =
@@ -266,7 +277,9 @@ export const handleHostedChat = async (
     setChatMessages,
     setToolInUse,
     applicationAdvisorDisplayMessage,
-    setApplicationAdvisorDisplayMessage
+    setApplicationAdvisorDisplayMessage,
+    advisorDetails,
+    setAdvisorDetails
   )
 }
 
@@ -313,6 +326,10 @@ export const processResponse = async (
   applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
+  >,
+  advisorDetails: AdvisorDetails[] | null,
+  setAdvisorDetails: React.Dispatch<
+    React.SetStateAction<AdvisorDetails[] | null>
   >
 ) => {
   let fullText = ""
@@ -333,8 +350,37 @@ export const processResponse = async (
               ].includes(chunk)
             ) {
               setApplicationAdvisorDisplayMessage(chunk)
+
+              setAdvisorDetails(prev => {
+                const currentAdvisors = prev || []
+
+                // Mark all existing advisors as completed
+                const updated = currentAdvisors.map(advisor => ({
+                  ...advisor,
+                  status: "completed" as "completed"
+                }))
+
+                // Add the new advisor
+                const newState = [
+                  ...updated,
+                  {
+                    name: chunk,
+                    status: "loading" as "loading"
+                  }
+                ]
+
+                return newState
+              })
             } else {
               setApplicationAdvisorDisplayMessage(null)
+              setAdvisorDetails(prev => {
+                return (
+                  prev?.map(advisor => ({
+                    ...advisor,
+                    status: "completed" as "completed"
+                  })) || null
+                )
+              })
               contentToAdd = chunk
             }
           } else {
