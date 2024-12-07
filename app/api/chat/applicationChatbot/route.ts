@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       if (!reader) throw new Error("No response body")
 
       let previousResponseMessage = ""
+      let buffer = ""
 
       try {
         while (true) {
@@ -60,37 +61,82 @@ export async function POST(request: Request) {
 
           for (const line of lines) {
             if (!line.trim()) continue
+            console.log("****line*****", line)
 
-            try {
-              console.log("****line*****", line)
-              const jsonResponse = JSON.parse(line)
+            // If buffer is empty, start with this line
+            // If buffer is not empty, append this line
+            if (!buffer) {
+              buffer = line
+            } else {
+              buffer += line
+            }
 
-              if (
-                jsonResponse.next &&
-                [
-                  "GeneralAdvisor",
-                  "AdmissionAdvisor",
-                  "FinancialCostAdvisor"
-                ].includes(jsonResponse.next) &&
-                !jsonResponse.message
-              ) {
-                await writer.write(encoder.encode(jsonResponse.next))
-                continue
-              }
-              if (
-                jsonResponse.message &&
-                jsonResponse.message.trim() &&
-                jsonResponse.message !== previousResponseMessage &&
-                jsonResponse.message !== "I don't know."
-              ) {
-                previousResponseMessage = jsonResponse.message
-                await writer.write(encoder.encode(jsonResponse.message.trim()))
-              }
-            } catch (e) {
-              if (line.trim()) {
-                await writer.write(encoder.encode(line))
+            //check if the line has } to know if the response is complete
+            if (buffer.includes("}")) {
+              try {
+                const jsonResponse = JSON.parse(buffer)
+                if (
+                  jsonResponse.next &&
+                  [
+                    "GeneralAdvisor",
+                    "AdmissionAdvisor",
+                    "FinancialCostAdvisor"
+                  ].includes(jsonResponse.next) &&
+                  !jsonResponse.message
+                ) {
+                  await writer.write(encoder.encode(jsonResponse.next))
+                  buffer = ""
+                  continue
+                }
+
+                if (
+                  jsonResponse.message &&
+                  jsonResponse.message.trim() &&
+                  jsonResponse.message !== previousResponseMessage &&
+                  jsonResponse.message !== "I don't know."
+                ) {
+                  previousResponseMessage = jsonResponse.message
+                  await writer.write(
+                    encoder.encode(jsonResponse.message.trim())
+                  )
+                }
+                //clear the buffer
+                buffer = ""
+              } catch (e) {
+                console.error("Error parsing JSON", e)
               }
             }
+
+            // try {
+            //   console.log("****line*****", line)
+            //   const jsonResponse = JSON.parse(line)
+
+            //   if (
+            //     jsonResponse.next &&
+            //     [
+            //       "GeneralAdvisor",
+            //       "AdmissionAdvisor",
+            //       "FinancialCostAdvisor"
+            //     ].includes(jsonResponse.next) &&
+            //     !jsonResponse.message
+            //   ) {
+            //     await writer.write(encoder.encode(jsonResponse.next))
+            //     continue
+            //   }
+            //   if (
+            //     jsonResponse.message &&
+            //     jsonResponse.message.trim() &&
+            //     jsonResponse.message !== previousResponseMessage &&
+            //     jsonResponse.message !== "I don't know."
+            //   ) {
+            //     previousResponseMessage = jsonResponse.message
+            //     await writer.write(encoder.encode(jsonResponse.message.trim()))
+            //   }
+            // } catch (e) {
+            //   if (line.trim()) {
+            //     await writer.write(encoder.encode(line))
+            //   }
+            // }
           }
         }
       } finally {
