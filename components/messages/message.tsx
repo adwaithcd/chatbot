@@ -486,7 +486,39 @@ export const Message: FC<MessageProps> = ({
               </div>
             ) : null}
 
-            {!firstTokenReceived &&
+            {!isEditing ? (
+              <div className={cn(isUser && "text-right")}>
+                {/* Add advisor info display */}
+                {message.role === "assistant" && isLast && (
+                  <>
+                    <div className="">
+                      <AdvisorStatus
+                        advisors={advisorDetails || []}
+                        currentAdvisor={applicationAdvisorDisplayMessage}
+                        showLoading={!firstTokenReceived && isGenerating}
+                      />
+                    </div>
+                    {/* Separator line - only show if there are advisors */}
+                    {((advisorDetails?.length ?? 0) > 0 ||
+                      (!firstTokenReceived && isGenerating)) && (
+                      <div className="my-4 border" />
+                    )}
+                  </>
+                )}
+
+                <MessageMarkdown content={message.content} />
+              </div>
+            ) : (
+              <TextareaAutosize
+                textareaRef={editInputRef}
+                className={cn("text-md w-full", isUser && "text-right")}
+                value={editedMessage}
+                onValueChange={setEditedMessage}
+                maxRows={20}
+              />
+            )}
+
+            {/* {!firstTokenReceived &&
             isGenerating &&
             isLast &&
             message.role === "assistant" ? (
@@ -500,21 +532,6 @@ export const Message: FC<MessageProps> = ({
                           currentAdvisor={applicationAdvisorDisplayMessage}
                           showLoading={true}
                         />
-
-                        // <>
-                        //   {applicationAdvisorDisplayMessage ? (
-                        //     <div className="text-base ">
-                        //       {"Calling " + applicationAdvisorDisplayMessage}
-                        //       <span className="animate-dots"></span>
-                        //     </div>
-                        //   ) : (
-                        //     <IconCircleFilled
-                        //       className="animate-pulse"
-                        //       size={20}
-                        //     />
-                        //   )}
-                        // </>
-                        // <IconCircleFilled className="animate-pulse" size={20} />
                       )
                     case "retrieval":
                       return (
@@ -545,7 +562,7 @@ export const Message: FC<MessageProps> = ({
               <div className={cn(isUser && "text-right")}>
                 <MessageMarkdown content={message.content} />
               </div>
-            )}
+            )} */}
           </div>
 
           {fileItems.length > 0 && (

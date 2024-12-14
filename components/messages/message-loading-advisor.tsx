@@ -13,14 +13,18 @@ export const AdvisorStatus = ({
   currentAdvisor,
   showLoading
 }: AdvisorDetailsProps) => {
-  if (advisors.length === 0 && !currentAdvisor && !showLoading) return null
+  const hasAdvisors = advisors.length > 0
 
-  if (advisors.length === 0 && showLoading) {
+  if (!hasAdvisors && showLoading) {
     return (
       <div className="mt-2">
         <IconCircleFilled className="animate-pulse" size={20} />
       </div>
     )
+  }
+
+  if (!hasAdvisors) {
+    return null
   }
 
   return (
@@ -35,10 +39,14 @@ export const AdvisorStatus = ({
                 <IconCheck className="text-green-500" size={20} />
               )}
               <span className="text-base font-medium">
+                {advisor.status === "loading" ? "Calling " : ""}
                 {advisor.name.replace(/([A-Z])/g, " $1").trim()}
+                {advisor.status === "loading" && (
+                  <span className="animate-dots" />
+                )}
               </span>
             </div>
-            {index < advisors.length - 1 && <div className="border" />}
+            {/* {index < advisors.length - 1 && <div className="border" />} */}
           </div>
         ))}
       </div>

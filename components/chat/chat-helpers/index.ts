@@ -344,7 +344,10 @@ export const processResponse = async (
             if (
               [
                 "GeneralAdvisor",
+                "general_advisor",
                 "AdmissionAdvisor",
+                "admission_advisor",
+                "financial_cost_advisor",
                 "FinancialCostAdvisor"
               ].includes(chunk)
             ) {

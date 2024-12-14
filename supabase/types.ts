@@ -966,6 +966,58 @@ export type Database = {
           },
         ]
       }
+      message_advisors: {
+        Row: {
+          advisor_id: string
+          advisor_type: string
+          chat_id: string
+          created_at: string
+          message_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          advisor_id?: string
+          advisor_type: string
+          chat_id: string
+          created_at?: string
+          message_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          advisor_id?: string
+          advisor_type?: string
+          chat_id?: string
+          created_at?: string
+          message_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_advisors_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_advisors_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_advisors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_file_items: {
         Row: {
           created_at: string
