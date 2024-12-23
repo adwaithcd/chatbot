@@ -248,7 +248,8 @@ export default function ProfileSettings() {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          <Button onClick={router.back}>Cancel</Button>
           <Button onClick={handleSave} className="px-8">
             Save
           </Button>
