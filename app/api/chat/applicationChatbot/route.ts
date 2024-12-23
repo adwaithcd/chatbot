@@ -96,8 +96,8 @@ export async function POST(request: Request) {
                   jsonResponse.message &&
                   jsonResponse.message.trim() &&
                   jsonResponse.message !== previousResponseMessage &&
-                  (jsonResponse.message !== "I don't know." ||
-                    jsonResponse.message !== "I don't know")
+                  jsonResponse.message !== "I don't know." &&
+                  jsonResponse.message !== "I don't know"
                 ) {
                   previousResponseMessage = jsonResponse.message
                   await writer.write(

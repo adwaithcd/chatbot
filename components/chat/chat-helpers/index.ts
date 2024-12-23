@@ -2,6 +2,7 @@
 
 import { createChatFiles } from "@/db/chat-files"
 import { createChat } from "@/db/chats"
+import { createMessageAdvisor } from "@/db/message-advisors"
 import { createMessageFileItems } from "@/db/message-file-items"
 import { createMessages, updateMessage } from "@/db/messages"
 import { uploadMessageImage } from "@/db/storage/message-images"
@@ -219,7 +220,7 @@ export const handleHostedChat = async (
   setFirstTokenReceived: React.Dispatch<React.SetStateAction<boolean>>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setToolInUse: React.Dispatch<React.SetStateAction<string>>,
-  chatId: String,
+  chatId: string,
   applicationAdvisorDisplayMessage: string | null,
   setApplicationAdvisorDisplayMessage: React.Dispatch<
     React.SetStateAction<string | null>
@@ -334,6 +335,7 @@ export const processResponse = async (
 ) => {
   let fullText = ""
   let contentToAdd = ""
+  let detectedAdvisors: string[] = []
 
   if (response.body) {
     await consumeReadableStream(
@@ -352,6 +354,7 @@ export const processResponse = async (
               ].includes(chunk)
             ) {
               setApplicationAdvisorDisplayMessage(chunk)
+              detectedAdvisors.push(chunk)
 
               setAdvisorDetails(prev => {
                 const currentAdvisors = prev || []
@@ -409,6 +412,7 @@ export const processResponse = async (
           //         ""
           //       )
           fullText += contentToAdd
+          contentToAdd = ""
         } catch (error) {
           console.error("Error parsing JSON:", error)
         }
@@ -434,7 +438,10 @@ export const processResponse = async (
       controller.signal
     )
 
-    return fullText
+    return {
+      text: fullText,
+      advisors: detectedAdvisors
+    }
   } else {
     throw new Error("Response body is null")
   }
@@ -496,7 +503,8 @@ export const handleCreateMessages = async (
     React.SetStateAction<Tables<"file_items">[]>
   >,
   setChatImages: React.Dispatch<React.SetStateAction<MessageImage[]>>,
-  selectedAssistant: Tables<"assistants"> | null
+  selectedAssistant: Tables<"assistants"> | null,
+  advisorDetails: AdvisorDetails[] | null
 ) => {
   const finalUserMessage: TablesInsert<"messages"> = {
     chat_id: currentChat.id,
@@ -546,6 +554,20 @@ export const handleCreateMessages = async (
       finalUserMessage,
       finalAssistantMessage
     ])
+
+    if (advisorDetails && advisorDetails.length > 0) {
+      // Create message advisors for the assistant message
+      const messageAdvisorPromises = advisorDetails.map(advisor => {
+        return createMessageAdvisor({
+          message_id: createdMessages[1].id,
+          chat_id: currentChat.id,
+          user_id: profile.user_id,
+          advisor_type: advisor.name
+        })
+      })
+
+      await Promise.all(messageAdvisorPromises)
+    }
 
     // Upload each image (stored in newMessageImages) for the user message to message_images bucket
     const uploadPromises = newMessageImages

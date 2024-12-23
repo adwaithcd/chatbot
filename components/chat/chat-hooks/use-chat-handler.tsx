@@ -290,6 +290,7 @@ export const useChatHandler = () => {
       }
 
       let generatedText = ""
+      let detectedAdvisors: string[] = []
 
       if (selectedTools.length > 0) {
         setToolInUse("Tools")
@@ -314,7 +315,7 @@ export const useChatHandler = () => {
 
         setToolInUse("none")
 
-        generatedText = await processResponse(
+        const result = await processResponse(
           response,
           isRegeneration
             ? payload.chatMessages[payload.chatMessages.length - 1]
@@ -329,9 +330,11 @@ export const useChatHandler = () => {
           advisorDetails,
           setAdvisorDetails
         )
+        generatedText = result.text
+        detectedAdvisors = result.advisors
       } else {
         if (modelData!.provider === "ollama") {
-          generatedText = await handleLocalChat(
+          const result = await handleLocalChat(
             payload,
             profile!,
             chatSettings!,
@@ -347,8 +350,10 @@ export const useChatHandler = () => {
             advisorDetails,
             setAdvisorDetails
           )
+          generatedText = result.text
+          detectedAdvisors = result.advisors
         } else {
-          generatedText = await handleHostedChat(
+          const result = await handleHostedChat(
             payload,
             profile!,
             modelData!,
@@ -367,6 +372,8 @@ export const useChatHandler = () => {
             advisorDetails,
             setAdvisorDetails
           )
+          generatedText = result.text
+          detectedAdvisors = result.advisors
         }
       }
 
@@ -409,7 +416,11 @@ export const useChatHandler = () => {
         setChatMessages,
         setChatFileItems,
         setChatImages,
-        selectedAssistant
+        selectedAssistant,
+        detectedAdvisors.map(name => ({
+          name,
+          status: "completed" as "completed"
+        }))
       )
 
       setIsGenerating(false)

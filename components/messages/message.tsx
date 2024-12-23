@@ -30,6 +30,7 @@ import { UilRobot, UilEnter } from "@iconscout/react-unicons"
 import { useTheme } from "next-themes"
 import { updateMessage } from "@/db/messages"
 import AdvisorStatus from "./message-loading-advisor"
+import { getMessageAdvisorsByMessageId } from "@/db/message-advisors"
 
 const ICON_SIZE = 32
 
@@ -128,6 +129,10 @@ export const Message: FC<MessageProps> = ({
 
   const [viewSources, setViewSources] = useState(false)
 
+  const [messageAdvisors, setMessageAdvisors] = useState<
+    Tables<"message_advisors">[]
+  >([])
+
   const handleCopy = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(message.content)
@@ -175,6 +180,21 @@ export const Message: FC<MessageProps> = ({
       input.setSelectionRange(input.value.length, input.value.length)
     }
   }, [isEditing])
+
+  useEffect(() => {
+    const fetchMessageAdvisors = async () => {
+      if (message.role === "assistant") {
+        try {
+          const advisors = await getMessageAdvisorsByMessageId(message.id)
+          setMessageAdvisors(advisors)
+        } catch (error) {
+          console.error("Error fetching message advisors:", error)
+        }
+      }
+    }
+
+    fetchMessageAdvisors()
+  }, [message.id, message.role, message.content])
 
   const MODEL_DATA = [
     ...models.map(model => ({
@@ -489,18 +509,31 @@ export const Message: FC<MessageProps> = ({
             {!isEditing ? (
               <div className={cn(isUser && "text-right")}>
                 {/* Add advisor info display */}
-                {message.role === "assistant" && isLast && (
+                {message.role === "assistant" && (
                   <>
                     <div className="">
-                      <AdvisorStatus
-                        advisors={advisorDetails || []}
-                        currentAdvisor={applicationAdvisorDisplayMessage}
-                        showLoading={!firstTokenReceived && isGenerating}
-                      />
+                      {isLast && !firstTokenReceived && isGenerating ? (
+                        // Show loading state for current message
+                        <AdvisorStatus
+                          advisors={advisorDetails || []}
+                          currentAdvisor={applicationAdvisorDisplayMessage}
+                          showLoading={true}
+                        />
+                      ) : messageAdvisors.length > 0 ? (
+                        // Show completed advisors for previous messages
+                        <AdvisorStatus
+                          advisors={messageAdvisors.map(advisor => ({
+                            name: advisor.advisor_type,
+                            status: "completed" as "completed"
+                          }))}
+                          currentAdvisor={null}
+                          showLoading={false}
+                        />
+                      ) : null}
                     </div>
                     {/* Separator line - only show if there are advisors */}
-                    {((advisorDetails?.length ?? 0) > 0 ||
-                      (!firstTokenReceived && isGenerating)) && (
+                    {(messageAdvisors.length > 0 ||
+                      (isLast && !firstTokenReceived && isGenerating)) && (
                       <div className="my-4 border" />
                     )}
                   </>

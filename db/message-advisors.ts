@@ -39,6 +39,7 @@ export const getMessageAdvisorsByMessageId = async (messageId: string) => {
     .from("message_advisors")
     .select("*")
     .eq("message_id", messageId)
+    .order("created_at", { ascending: true })
 
   if (error) {
     throw new Error(error.message)
