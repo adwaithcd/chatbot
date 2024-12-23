@@ -214,6 +214,7 @@ In environment variables, add the following from the values you got above:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_OLLAMA_URL` (only needed when using local Ollama models; default: `http://localhost:11434`)
 - `APPLICATION_CHATBOT_URL` add the url to the chatbot llm
+- `APPLICATION_CHATBOT_RECOMMENDATIONS_URL`  add the url for recommendations
 
 You can also add API keys as environment variables.
 
