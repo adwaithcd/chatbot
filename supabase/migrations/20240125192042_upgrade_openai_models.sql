@@ -1,8 +1,8 @@
 -- WORKSPACES
 
 UPDATE workspaces
-SET default_model = 'gemini-pro'
-WHERE default_model = 'gpt-4-turbo-preview';
+SET default_model = 'applicationChatbot'
+WHERE default_model = 'gemini-pro';
 
 UPDATE workspaces
 SET default_model = 'gpt-3.5-turbo'
@@ -11,8 +11,8 @@ WHERE default_model = 'gpt-3.5-turbo-1106';
 -- PRESETS
 
 UPDATE presets
-SET model = 'gemini-pro'
-WHERE model = 'gpt-4-turbo-preview';
+SET model = 'applicationChatbot'
+WHERE model = 'gemini-pro';
 
 UPDATE presets
 SET model = 'gpt-3.5-turbo'
@@ -21,8 +21,8 @@ WHERE model = 'gpt-3.5-turbo-1106';
 -- ASSISTANTS
 
 UPDATE assistants
-SET model = 'gemini-pro'
-WHERE model = 'gpt-4-turbo-preview';
+SET model = 'applicationChatbot'
+WHERE model = 'gemini-pro';
 
 UPDATE assistants
 SET model = 'gpt-3.5-turbo'
@@ -31,8 +31,8 @@ WHERE model = 'gpt-3.5-turbo-1106';
 -- CHATS
 
 UPDATE chats
-SET model = 'gemini-pro'
-WHERE model = 'gpt-4-turbo-preview';
+SET model = 'applicationChatbot'
+WHERE model = 'gemini-pro';
 
 UPDATE chats
 SET model = 'gpt-3.5-turbo'
@@ -41,8 +41,8 @@ WHERE model = 'gpt-3.5-turbo-1106';
 -- MESSAGES
 
 UPDATE messages
-SET model = 'gemini-pro'
-WHERE model = 'gpt-4-turbo-preview';
+SET model = 'applicationChatbot'
+WHERE model = 'gemini-pro';
 
 UPDATE messages
 SET model = 'gpt-3.5-turbo'
@@ -93,7 +93,7 @@ BEGIN
         TRUE,
         'Home',
         4096,
-        'gemini-pro', -- Updated default model
+        'applicationChatbot', -- Updated default model
         'You are a friendly, helpful AI assistant.',
         0.5,
         'My home workspace.',
