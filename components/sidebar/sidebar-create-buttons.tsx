@@ -3,7 +3,7 @@ import { ChatbotUIContext } from "@/context/context"
 import { createFolder } from "@/db/folders"
 import { ContentType } from "@/types"
 import { IconFolderPlus, IconPlus } from "@tabler/icons-react"
-import { FC, useContext, useState } from "react"
+import { FC, useContext, useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { CreateAssistant } from "./items/assistants/create-assistant"
 import { CreateCollection } from "./items/collections/create-collection"
@@ -18,8 +18,10 @@ import {
   UilEdit,
   UilLeftArrowFromLeft,
   UilFileCheckAlt,
-  UilGraphBar
+  UilGraphBar,
+  UilFileExclamationAlt
 } from "@iconscout/react-unicons"
+import { getSurveyResponseByUserId } from "@/db/survey-responses"
 
 interface SidebarCreateButtonsProps {
   contentType: ContentType
@@ -43,6 +45,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   const [isCreatingAssistant, setIsCreatingAssistant] = useState(false)
   const [isCreatingTool, setIsCreatingTool] = useState(false)
   const [isCreatingModel, setIsCreatingModel] = useState(false)
+  const [isSurveyComplete, setIsSurveyComplete] = useState(false)
   const router = useRouter()
 
   const handleCreateFolder = async () => {
@@ -106,6 +109,22 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
     }
   }
 
+  useEffect(() => {
+    const checkSurveyStatus = async () => {
+      if (profile?.user_id) {
+        try {
+          const surveyResponse = await getSurveyResponseByUserId(
+            profile.user_id
+          )
+          setIsSurveyComplete(surveyResponse?.step_completed === 5)
+        } catch (e) {
+          console.error("Error checking survey status:", e)
+        }
+      }
+    }
+    checkSurveyStatus()
+  }, [profile?.user_id])
+
   return (
     <div className="flex w-full flex-col space-y-2">
       {/* <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
@@ -146,7 +165,11 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
           variant="ghost"
           onClick={() => router.push("/survey")}
         >
-          <UilFileCheckAlt className="mr-3" size={20} />
+          {isSurveyComplete ? (
+            <UilFileCheckAlt className="mr-3" size={20} />
+          ) : (
+            <UilFileExclamationAlt className="mr-3" size={20} />
+          )}
           Survey
         </Button>
       </div>
