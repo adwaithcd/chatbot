@@ -46,6 +46,8 @@ import ImpactFactorsForm from "./steps/impact-factors-form"
 import ChallengesForm from "./steps/application-challenges-form"
 import { supabase } from "@/lib/supabase/browser-client"
 import { useRouter } from "next/navigation"
+//@ts-ignore
+import { UilSmileBeam, UilArrowLeft } from "@iconscout/react-unicons"
 
 const steps = [
   { id: 1, name: "Your Background" },
@@ -231,23 +233,23 @@ const SurveyLayout = () => {
             profile.user_id
           )
 
-          if (surveyResponse && surveyResponse.step_completed === 5) {
-            // Get workspace info for redirection post survey completion
-            const { data: homeWorkspace, error } = await supabase
-              .from("workspaces")
-              .select("*")
-              .eq("user_id", profile.user_id)
-              .eq("is_home", true)
-              .single()
+          // if (surveyResponse && surveyResponse.step_completed === 5) {
+          //   // Get workspace info for redirection post survey completion
+          //   const { data: homeWorkspace, error } = await supabase
+          //     .from("workspaces")
+          //     .select("*")
+          //     .eq("user_id", profile.user_id)
+          //     .eq("is_home", true)
+          //     .single()
 
-            if (!homeWorkspace) {
-              throw new Error(error?.message || "Unable to find home workspace")
-            }
+          //   if (!homeWorkspace) {
+          //     throw new Error(error?.message || "Unable to find home workspace")
+          //   }
 
-            // Navigate to workspace
-            router.push(`/${homeWorkspace.id}/chat`)
-            return
-          }
+          //   // Navigate to workspace
+          //   router.push(`/${homeWorkspace.id}/chat`)
+          //   return
+          // }
 
           if (surveyResponse) {
             setSurveyFormData({
@@ -987,13 +989,29 @@ const SurveyLayout = () => {
             defaultFactors={DEFAULT_FACTORS}
           />
         )
+      case 6:
+        return (
+          <div className="flex h-full flex-col items-center justify-center space-y-6">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="flex items-center gap-4">
+                <UilSmileBeam size={80} />
+                <p className="text-lg">
+                  Thank you very much for your participation in the survey. Your
+                  response helps to generate accurate reports. You may now
+                  return to chat.
+                </p>
+              </div>
+              <Button onClick={handleNavigateToChat}>Return to chat</Button>
+            </div>
+          </div>
+        )
       default:
         return null
     }
   }
 
   const handleStepClick = (stepId: number) => {
-    if (stepId <= stepCompleted + 1 && currentStep !== 6) {
+    if (stepId <= stepCompleted + 1) {
       if (stepId !== currentStep) {
         if (isDirty) {
           setShowUnsavedDialog(true)
@@ -1082,48 +1100,65 @@ const SurveyLayout = () => {
   }, [isDirty])
 
   // If we're on step 6 (completion), render only the completion message
-  if (currentStep === 6) {
-    return renderCompletionMessage()
-  }
+  // if (currentStep === 6) {
+  //   return renderCompletionMessage()
+  // }
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <div
-        className="flex h-full w-[95px] flex-col md:w-[350px]"
+        className="flex h-full w-[95px] flex-col justify-between md:w-[350px]"
         // style={{
         //   minWidth: `${SIDEBAR_WIDTH}px`,
         //   maxWidth: `${SIDEBAR_WIDTH}px`,
         //   width: `${SIDEBAR_WIDTH}px`
         // }}
       >
-        <h2 className="mb-4 hidden py-10 pl-12 pr-4 text-2xl font-semibold md:block">
-          Part One: Entry Survey
-        </h2>
-        <h2 className="mb-4 px-3 py-10 text-2xl font-semibold md:hidden">
-          Entry Survey
-        </h2>
+        <div>
+          <h2 className="mb-4 hidden py-10 pl-12 pr-4 text-2xl font-semibold md:block">
+            Part One: Entry Survey
+          </h2>
+          <h2 className="mb-4 px-3 py-10 text-2xl font-semibold md:hidden">
+            Entry Survey
+          </h2>
 
-        {/* <h2 className="mb-4 px-3 py-10 text-2xl font-semibold md:hidden">
+          {/* <h2 className="mb-4 px-3 py-10 text-2xl font-semibold md:hidden">
           Entry Survey
         </h2> */}
-        <ul className="space-y-2">
-          {steps.map(step => (
-            <li
-              key={step.id}
-              className={cn(
-                "p-3 text-center md:pr-10 md:text-right",
-                currentStep === step.id && "bg-muted/50 font-bold",
-                step.id <= stepCompleted + 1
-                  ? "cursor-pointer"
-                  : "cursor-not-allowed opacity-50"
-              )}
-              onClick={() => handleStepClick(step.id)}
+          <ul className="space-y-2">
+            {steps.map(step => (
+              <li
+                key={step.id}
+                className={cn(
+                  "p-3 text-center md:pr-10 md:text-right",
+                  currentStep === step.id && "bg-muted/50 font-bold",
+                  step.id <= stepCompleted + 1
+                    ? "cursor-pointer"
+                    : "cursor-not-allowed opacity-50"
+                )}
+                onClick={() => handleStepClick(step.id)}
+              >
+                <span className="hidden md:block">{step.name}</span>
+                <span className="block md:hidden">{step.id}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mt-auto pb-4">
+          {currentStep <= 5 && (
+            <Button
+              variant="ghost"
+              className="flex w-full justify-end pr-10"
+              onClick={handleNavigateToChat}
             >
-              <span className="hidden md:block">{step.name}</span>
-              <span className="block md:hidden">{step.id}</span>
-            </li>
-          ))}
-        </ul>
+              <div className="flex items-center gap-2">
+                <UilArrowLeft className="size-6" />
+                <span className="hidden md:block">Return to chat</span>
+                <span className="block md:hidden">Back</span>
+              </div>
+            </Button>
+          )}
+        </div>
       </div>
       {/* <div className="bg-muted/50 relative flex size-full flex-col items-center overflow-y-auto p-8">
         {renderStepContent()}
@@ -1140,9 +1175,11 @@ const SurveyLayout = () => {
           {renderStepContent()}
         </div>
         <div className="fixed bottom-8 right-8">
-          <Button onClick={handleNextStep} disabled={!isStepComplete()}>
-            {currentStep === 5 ? "Submit" : "Next"}
-          </Button>
+          {currentStep <= 5 && (
+            <Button onClick={handleNextStep} disabled={!isStepComplete()}>
+              {currentStep === 5 ? "Submit" : "Next"}
+            </Button>
+          )}
         </div>
       </div>
       <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>

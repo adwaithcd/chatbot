@@ -12,8 +12,14 @@ import { CreateModel } from "./items/models/create-model"
 import { CreatePreset } from "./items/presets/create-preset"
 import { CreatePrompt } from "./items/prompts/create-prompt"
 import { CreateTool } from "./items/tools/create-tool"
+import { useRouter } from "next/navigation"
 //@ts-ignore
-import { UilEdit, UilLeftArrowFromLeft } from "@iconscout/react-unicons"
+import {
+  UilEdit,
+  UilLeftArrowFromLeft,
+  UilFileCheckAlt,
+  UilGraphBar
+} from "@iconscout/react-unicons"
 
 interface SidebarCreateButtonsProps {
   contentType: ContentType
@@ -37,6 +43,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   const [isCreatingAssistant, setIsCreatingAssistant] = useState(false)
   const [isCreatingTool, setIsCreatingTool] = useState(false)
   const [isCreatingModel, setIsCreatingModel] = useState(false)
+  const router = useRouter()
 
   const handleCreateFolder = async () => {
     if (!profile) return
@@ -100,7 +107,7 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
   }
 
   return (
-    <div className="flex w-full space-x-2">
+    <div className="flex w-full flex-col space-y-2">
       {/* <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
         <IconPlus className="mr-1" size={20} />
         New{" "}
@@ -120,7 +127,8 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
           variant="ghost"
           onClick={getCreateFunction()}
         >
-          <UilEdit className="mr-1" size={20} />
+          <UilEdit className="mr-3" size={20} />
+          New Chat
         </Button>
 
         <Button
@@ -129,6 +137,24 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
           onClick={onCloseSideBar}
         >
           <UilLeftArrowFromLeft size={20} />
+        </Button>
+      </div>
+
+      <div className="flex w-full justify-between">
+        <Button
+          className="flex h-[36px]"
+          variant="ghost"
+          onClick={() => router.push("/survey")}
+        >
+          <UilFileCheckAlt className="mr-3" size={20} />
+          Survey
+        </Button>
+      </div>
+
+      <div className="flex w-full justify-between">
+        <Button className="flex h-[36px]" variant="ghost">
+          <UilGraphBar className="mr-3" size={20} />
+          Report
         </Button>
       </div>
 

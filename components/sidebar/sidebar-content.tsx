@@ -35,7 +35,7 @@ export const SidebarContent: FC<SidebarContentProps> = ({
         />
       </div>
 
-      <div className="mt-2">
+      <div className="mt-2 py-2">
         <SidebarSearch
           contentType={contentType}
           searchTerm={searchTerm}
