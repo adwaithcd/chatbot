@@ -47,13 +47,18 @@ export async function POST(request: Request) {
       const reader = response.body?.getReader()
       if (!reader) throw new Error("No response body")
 
-      let previousResponseMessage = ""
       let buffer = ""
+      let finalMessage = ""
 
       try {
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {
+            if (finalMessage) {
+              await writer.write(encoder.encode(finalMessage))
+            }
+            break
+          }
 
           // Decode the chunk and process line by line
           const chunk = decoder.decode(value)
@@ -65,11 +70,7 @@ export async function POST(request: Request) {
 
             // If buffer is empty, start with this line
             // If buffer is not empty, append this line
-            if (!buffer) {
-              buffer = line
-            } else {
-              buffer += line
-            }
+            buffer = buffer ? buffer + line : line
 
             //check if the line has } to know if the response is complete
             if (buffer.includes("}")) {
@@ -95,14 +96,13 @@ export async function POST(request: Request) {
                 if (
                   jsonResponse.message &&
                   jsonResponse.message.trim() &&
-                  jsonResponse.message !== previousResponseMessage &&
                   jsonResponse.message !== "I don't know." &&
                   jsonResponse.message !== "I don't know"
                 ) {
-                  previousResponseMessage = jsonResponse.message
-                  await writer.write(
-                    encoder.encode(jsonResponse.message.trim())
-                  )
+                  finalMessage = jsonResponse.message.trim()
+                  // await writer.write(
+                  //   encoder.encode(jsonResponse.message.trim())
+                  // )
                 }
                 //clear the buffer
                 buffer = ""
@@ -110,37 +110,6 @@ export async function POST(request: Request) {
                 console.error("Error parsing JSON", e)
               }
             }
-
-            // try {
-            //   console.log("****line*****", line)
-            //   const jsonResponse = JSON.parse(line)
-
-            //   if (
-            //     jsonResponse.next &&
-            //     [
-            //       "GeneralAdvisor",
-            //       "AdmissionAdvisor",
-            //       "FinancialCostAdvisor"
-            //     ].includes(jsonResponse.next) &&
-            //     !jsonResponse.message
-            //   ) {
-            //     await writer.write(encoder.encode(jsonResponse.next))
-            //     continue
-            //   }
-            //   if (
-            //     jsonResponse.message &&
-            //     jsonResponse.message.trim() &&
-            //     jsonResponse.message !== previousResponseMessage &&
-            //     jsonResponse.message !== "I don't know."
-            //   ) {
-            //     previousResponseMessage = jsonResponse.message
-            //     await writer.write(encoder.encode(jsonResponse.message.trim()))
-            //   }
-            // } catch (e) {
-            //   if (line.trim()) {
-            //     await writer.write(encoder.encode(line))
-            //   }
-            // }
           }
         }
       } finally {

@@ -8,7 +8,7 @@ export const createMessageAdvisor = async (
 ) => {
   const { data: createdMessageAdvisor, error } = await supabase
     .from("message_advisors")
-    .insert([messageAdvisor])
+    .upsert([messageAdvisor])
     .select("*")
     .single()
 
