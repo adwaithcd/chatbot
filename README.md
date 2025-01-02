@@ -97,7 +97,7 @@ Now go to your `.env.local` file and fill in the values.
 
 - `APPLICATION_CHATBOT_URL` add the url to the chatbot llm
 - `APPLICATION_CHATBOT_RECOMMENDATIONS_URL`  add the url for recommendations
-- `SURVEY_REQUIRED` if value is 1, survey is mandatory
+- `NEXT_PUBLIC_SURVEY_REQUIRED` if value is 1, survey is mandatory
 
 #### 2. SQL Setup
 
@@ -222,7 +222,7 @@ Mandatory env variables:
 
 - `APPLICATION_CHATBOT_URL` add the url to the chatbot llm
 - `APPLICATION_CHATBOT_RECOMMENDATIONS_URL`  add the url for recommendations
-- `SURVEY_REQUIRED` if value is 1, survey is mandatory
+- `NEXT_PUBLIC_SURVEY_REQUIRED` if value is 1, survey is mandatory
 
 <!-- You can also add API keys as environment variables.
 

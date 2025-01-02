@@ -33,7 +33,7 @@ export default async function Login({
     }
   )
   const session = (await supabase.auth.getSession()).data.session
-  const surveyRequired = process.env.SURVEY_REQUIRED ?? "1"
+  const surveyRequired = process.env.NEXT_PUBLIC_SURVEY_REQUIRED ?? "0"
 
   if (session) {
     if (surveyRequired === "1") {

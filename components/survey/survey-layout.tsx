@@ -196,6 +196,7 @@ const SurveyLayout = () => {
     factors: [] as ApplicationOutcomeFactor[]
   })
   const router = useRouter()
+  const [showReturnButton, setShowReturnButton] = useState(true)
 
   const [surveyFormData, setSurveyFormData] = useState<SurveyForm>({
     survey_id: uuidv4(),
@@ -223,6 +224,11 @@ const SurveyLayout = () => {
   const [factors, setFactors] = useState<ApplicationOutcomeFactor[]>([
     ...DEFAULT_FACTORS
   ])
+
+  //checking is survey is required to display the back button
+  useEffect(() => {
+    setShowReturnButton(process.env.NEXT_PUBLIC_SURVEY_REQUIRED === "0")
+  }, [])
 
   useEffect(() => {
     const fetchSurveyResponse = async () => {
@@ -1145,7 +1151,7 @@ const SurveyLayout = () => {
           </ul>
         </div>
         <div className="mt-auto pb-4">
-          {currentStep <= 5 && (
+          {showReturnButton && currentStep <= 5 && (
             <Button
               variant="ghost"
               className="flex w-full justify-end md:pr-10"
