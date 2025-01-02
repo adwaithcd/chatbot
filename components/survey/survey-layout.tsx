@@ -1148,7 +1148,7 @@ const SurveyLayout = () => {
           {currentStep <= 5 && (
             <Button
               variant="ghost"
-              className="flex w-full justify-end pr-10"
+              className="flex w-full justify-end md:pr-10"
               onClick={handleNavigateToChat}
             >
               <div className="flex items-center gap-2">
