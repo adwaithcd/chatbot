@@ -22,6 +22,7 @@ import {
   UilFileExclamationAlt
 } from "@iconscout/react-unicons"
 import { getSurveyResponseByUserId } from "@/db/survey-responses"
+import { toast } from "sonner"
 
 interface SidebarCreateButtonsProps {
   contentType: ContentType
@@ -125,6 +126,19 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
     checkSurveyStatus()
   }, [profile?.user_id])
 
+  const handleReportClick = () => {
+    if (!isSurveyComplete) {
+      toast.error("To activate summary reports, please complete the survey.")
+      return
+    }
+
+    if (selectedWorkspace) {
+      router.push(`/${selectedWorkspace.id}/report`)
+    } else {
+      toast.error("Workspace not selected.")
+    }
+  }
+
   return (
     <div className="flex w-full flex-col space-y-2">
       {/* <Button className="flex h-[36px] grow" onClick={getCreateFunction()}>
@@ -175,7 +189,11 @@ export const SidebarCreateButtons: FC<SidebarCreateButtonsProps> = ({
       </div>
 
       <div className="flex w-full justify-between">
-        <Button className="flex h-[36px]" variant="ghost">
+        <Button
+          className="flex h-[36px]"
+          variant="ghost"
+          onClick={handleReportClick}
+        >
           <UilGraphBar className="mr-3" size={20} />
           Report
         </Button>
