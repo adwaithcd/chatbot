@@ -1547,6 +1547,41 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          chat_report: string | null
+          created_at: string
+          report_id: string
+          survey_report: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_report?: string | null
+          created_at?: string
+          report_id?: string
+          survey_report?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_report?: string | null
+          created_at?: string
+          report_id?: string
+          survey_report?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       survey_responses: {
         Row: {
           application_year: number | null

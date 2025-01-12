@@ -222,7 +222,6 @@ const ImpactFactorsForm: React.FC<ImpactFactorsFormProps> = ({
       return updatedFactors
     })
     setActiveId(null)
-    console.log("Updated factors", impactFactors)
   }
 
   const handleFinancialSupportChange = (

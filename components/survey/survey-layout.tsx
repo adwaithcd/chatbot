@@ -795,7 +795,6 @@ const SurveyLayout = () => {
 
   const updateApplications = async () => {
     for (const application of applications) {
-      console.log("application", application)
       const { isSaved, ...applicationToUpdate } = application
       try {
         await addOrUpdateCollegeApplication({
@@ -850,6 +849,21 @@ const SurveyLayout = () => {
     try {
       //update completed step to 5
       await updateSurveyResponseStep(surveyId, 5, {})
+
+      //queue report generation in background
+
+      fetch("/api/reports/queue", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: profile?.user_id,
+          type: "survey"
+        })
+      }).catch(error => {
+        console.error("Error queuing report generation:", error)
+      })
 
       //updating to 6 to show completion message
       setCurrentStep(6)
@@ -1030,7 +1044,6 @@ const SurveyLayout = () => {
   }
 
   const handleSaveAndNavigate = async () => {
-    console.log("save and navigate")
     await handleNextStep()
     setShowUnsavedDialog(false)
     if (pendingStepNavigation !== null) {
