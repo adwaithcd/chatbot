@@ -19,9 +19,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        input: {
-          question: promptText
-        }
+        question: promptText
       })
     })
 

@@ -19,16 +19,9 @@ import {
 } from "@/components/ui/tooltip"
 
 interface ApiResponse {
-  output: {
-    "question 1": string
-    "question 2": string
-    "question 3": string
-    "question 4": string
-  }
-  metadata: {
-    run_id: string
-    feedback_tokens: string[]
-  }
+  prompts: Array<{
+    prompt: string
+  }>
 }
 
 const DEFAULT_PROMPTS = [
@@ -85,12 +78,8 @@ export default function ChatPage() {
 
         const data: ApiResponse = await response.json()
 
-        const questions = [
-          data.output["question 1"],
-          data.output["question 2"],
-          data.output["question 3"]
-        ]
-        setRecommendedPrompts(questions)
+        const prompts = data.prompts.slice(0, 3).map(p => p.prompt)
+        setRecommendedPrompts(prompts)
       } catch (error) {
         console.error("Error fetching prompts:", error)
         setRecommendedPrompts(DEFAULT_PROMPTS)

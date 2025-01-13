@@ -76,5 +76,5 @@ Please provide a detailed report that includes:
 4. List of universities that may interest them
 5. Scholarship information if any
 
-Based on the user's chat history, generate a comprehensive analysis of their interactions and key themes in second person. Format the report with clear sections and bullet points for easy reading.`
+Based on the user's chat history, generate a chat summary report of their interactions and key themes in second person. Format the report with clear sections and bullet points for easy reading.`
 }

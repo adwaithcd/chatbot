@@ -13,6 +13,12 @@ interface ChatRecommendationsProps {
   className?: string
 }
 
+interface ApiResponse {
+  prompts: Array<{
+    prompt: string
+  }>
+}
+
 const ChatRecommendations = ({
   onRecommendationClick,
   lastUserMessage,
@@ -65,12 +71,8 @@ const ChatRecommendations = ({
 
         if (!response.ok) throw new Error("Failed to fetch recommendations")
 
-        const data = await response.json()
-        const questions = [
-          data.output["question 1"],
-          data.output["question 2"],
-          data.output["question 3"]
-        ]
+        const data: ApiResponse = await response.json()
+        const questions = data.prompts.slice(0, 3).map(item => item.prompt)
         setRecommendations(questions)
       } catch (error) {
         console.error("Error fetching recommendations:", error)
