@@ -24,8 +24,6 @@ const OverallExperienceForm: React.FC<OverallExperienceFormProps> = ({
       ...prev,
       [field]: value
     }))
-
-    console.log(formData)
   }
 
   return (

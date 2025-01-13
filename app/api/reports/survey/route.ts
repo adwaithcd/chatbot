@@ -1,72 +1,83 @@
+// app/api/reports/survey/route.ts
+import { NextResponse } from "next/server"
 import { checkApiKey, getServerProfile } from "@/lib/server/server-chat-helpers"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import {
-  getServerChallenges,
-  getServerCollegeApplications,
-  getServerImpactFactors,
-  getServerOutcomeFactors,
   getServerSurveyResponse,
   getServerTestScores,
+  getServerCollegeApplications,
+  getServerImpactFactors,
+  getServerChallenges,
+  getServerOutcomeFactors,
   upsertServerReport
 } from "@/lib/server/server-report-helpers"
 
-export const createReport = async (userId: string, type: "survey" | "chat") => {
+export async function POST(request: Request) {
   try {
+    const { userId } = await request.json()
+
     const profile = await getServerProfile()
     checkApiKey(profile.google_gemini_api_key, "Google")
 
     const genAI = new GoogleGenerativeAI(profile.google_gemini_api_key || "")
     const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
-    let data
-    let prompt
+    const data = await formatSurveyData(userId)
 
-    if (type === "survey") {
-      data = await formatSurveyData(userId)
-      prompt = generateSurveyPrompt(data)
-    } else {
-      data = await formatChatData(userId)
-      prompt = generateChatPrompt(data)
+    // If no survey data, return default message
+    if (!data) {
+      const defaultReport =
+        "Please complete the survey to generate your survey summary."
+      await upsertServerReport({
+        user_id: userId,
+        survey_report: defaultReport
+      })
+      return NextResponse.json({
+        success: true,
+        report: defaultReport
+      })
     }
 
+    // Generate prompt from survey data
+    const prompt = generateSurveyPrompt(data)
+
+    // Generate report using LLM
     const result = await model.generateContent(prompt)
     const response = await result.response
     const text = response.text()
 
-    // Update the report in DB
-    if (type === "survey") {
-      await upsertServerReport({
-        user_id: userId,
-        survey_report: text
-      })
-    } else {
-      await upsertServerReport({
-        user_id: userId,
-        chat_report: text
-      })
-    }
+    // Update report in database
+    await upsertServerReport({
+      user_id: userId,
+      survey_report: text
+    })
 
-    return { success: true }
-  } catch (error) {
-    console.error(`Error generating ${type} report:`, error)
-    return { success: false, error }
+    // Return the generated report
+    return NextResponse.json({
+      success: true,
+      report: text
+    })
+  } catch (error: any) {
+    console.error("Error generating survey report:", error)
+    return NextResponse.json(
+      { error: error.message || "Failed to generate survey report" },
+      { status: 500 }
+    )
   }
 }
 
-const formatSurveyData = async (userId: string) => {
+async function formatSurveyData(userId: string) {
   try {
     const surveyResponse = await getServerSurveyResponse(userId)
     if (!surveyResponse) {
-      throw new Error("Survey response not found")
+      return null
     }
 
-    // Only proceed if we have a valid survey_id
     const surveyId = surveyResponse.survey_id
     if (!surveyId) {
-      throw new Error("Invalid survey ID")
+      return null
     }
 
-    // Now fetch all related data using the surveyId
     const [testScores, applications, impactFactors, challenges, factors] =
       await Promise.all([
         getServerTestScores(surveyId),
@@ -124,20 +135,15 @@ const formatSurveyData = async (userId: string) => {
   }
 }
 
-const formatChatData = async (userId: string) => {
-  // TODO: Implement chat data formatting when needed
-  return {}
-}
-
-const generateSurveyPrompt = (data: any) => {
-  return `Generate a personalized analysis and report of this student's college application journey based on their survey responses:
+function generateSurveyPrompt(data: any) {
+  return `Generate a personalized summary report of this student's college application journey based on their survey responses in second person:
 
 ${data.background.applicationYear ? `Application Year: ${data.background.applicationYear}` : ""}
 
 Location Information:
 - City: ${data.background.location.city}
 - State: ${data.background.location.state}
-${data.background.location.country !== "Not specified" ? `- Country: ${data.background.location.country}` : "-Country: USA"}
+${data.background.location.country !== "Not specified" ? `- Country: ${data.background.location.country}` : "- Country: USA"}
 
 Academic Background:
 - High School: ${data.background.academics.highSchool}
@@ -146,14 +152,14 @@ Academic Background:
 ${
   data.testScores.length > 0
     ? `Test Scores:
-${data.testScores.map((test: { testName: any; score: any }) => `- ${test.testName}: ${test.score}`).join("\n")}`
+${data.testScores.map((test: any) => `- ${test.testName}: ${test.score}`).join("\n")}`
     : ""
 }
 
 ${
   data.collegeApplications.length > 0
     ? `College Applications:
-${data.collegeApplications.map((app: { collegeName: any; major: any; status: any }) => `- ${app.collegeName} (${app.major}): ${app.status}`).join("\n")}`
+${data.collegeApplications.map((app: any) => `- ${app.collegeName} (${app.major}): ${app.status}`).join("\n")}`
     : ""
 }
 
@@ -171,7 +177,7 @@ ${data.financialSupport}`
 ${
   data.impactFactors.length > 0
     ? `Impact Factors in Decision Making:
-${data.impactFactors.map((factor: { factor: any; is_important: any; rank: any }) => `- ${factor.factor} (Importance: ${factor.is_important ? "High" : "Low"}${factor.rank ? `, Rank: ${factor.rank}` : ""})`).join("\n")}`
+${data.impactFactors.map((factor: any) => `- ${factor.factor} (Importance: ${factor.is_important ? "High" : "Low"}${factor.rank ? `, Rank: ${factor.rank}` : ""})`).join("\n")}`
     : ""
 }
 
@@ -182,11 +188,5 @@ ${data.challenges.map((challenge: any) => `- ${challenge}`).join("\n")}`
     : ""
 }
 
-Please provide a summary of the survey responses. Use phrases like "your"
 Make specific references to their chosen major, test scores, and unique circumstances. Format the report in clear sections with bullet points where appropriate.`
-}
-
-const generateChatPrompt = (data: any) => {
-  // TODO: Implement chat prompt generation
-  return ""
 }

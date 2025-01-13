@@ -110,3 +110,15 @@ export const upsertServerReport = async (report: {
   if (error) throw error
   return data
 }
+
+export const getServerUserMessages = async (userId: string) => {
+  const supabase = getServerSupabase()
+  const { data: messages, error } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("role", "user")
+
+  if (error) throw error
+  return messages
+}

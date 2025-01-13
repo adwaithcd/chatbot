@@ -8,6 +8,8 @@ import { IconLoader2 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { MessageMarkdown } from "@/components/messages/message-markdown"
 import { IconDownload, IconShare } from "@tabler/icons-react"
+//@ts-ignore
+import { UilDownloadAlt, UilShareAlt } from "@iconscout/react-unicons"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
@@ -51,8 +53,7 @@ const ReportCard = React.forwardRef<
         onClick={onDownload}
         className="flex items-center gap-2"
       >
-        <IconDownload className="size-4" />
-        Download
+        <UilDownloadAlt className="size-4" />
       </Button>
       <Button
         variant="ghost"
@@ -60,8 +61,7 @@ const ReportCard = React.forwardRef<
         onClick={onShare}
         className="flex items-center gap-2"
       >
-        <IconShare className="size-4" />
-        Share
+        <UilShareAlt className="size-4" />
       </Button>
     </div>
   </div>
@@ -72,20 +72,107 @@ ReportCard.displayName = "ReportCard"
 const ReportPage = () => {
   const { profile } = useContext(ChatbotUIContext)
   const [isLoading, setIsLoading] = useState(true)
+  const [isChatReportGenerating, setIsChatReportGenerating] = useState(false)
+  const [isSurveyReportGenerating, setIsSurveyReportGenerating] =
+    useState(false)
   const [report, setReport] = useState<Report | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const surveyReportRef = React.useRef<HTMLDivElement>(null)
   const chatReportRef = React.useRef<HTMLDivElement>(null)
 
+  const generateSurveyReport = async () => {
+    if (!profile?.user_id) return
+
+    setIsSurveyReportGenerating(true)
+    try {
+      const response = await fetch("/api/reports/survey", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: profile.user_id
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate survey report")
+      }
+
+      setReport(prev =>
+        prev
+          ? {
+              ...prev,
+              survey_report: data.report
+            }
+          : null
+      )
+    } catch (err: any) {
+      console.error("Error generating survey report:", err)
+      toast.error("Error generating survey report: " + err.message)
+    } finally {
+      setIsSurveyReportGenerating(false)
+    }
+  }
+
+  const generateChatReport = async () => {
+    if (!profile?.user_id) return
+
+    setIsChatReportGenerating(true)
+    try {
+      const response = await fetch("/api/reports/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: profile.user_id
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate chat report")
+      }
+
+      setReport(prev =>
+        prev
+          ? {
+              ...prev,
+              chat_report: data.report
+            }
+          : null
+      )
+    } catch (err: any) {
+      console.error("Error generating chat report:", err)
+      toast.error("Error generating chat report: " + err.message)
+    } finally {
+      setIsChatReportGenerating(false)
+    }
+  }
+
   useEffect(() => {
-    const fetchReport = async () => {
+    const generateReports = async () => {
       if (!profile?.user_id) return
 
       try {
         setIsLoading(true)
-        const reportData = await getReportByUserId(profile.user_id)
-        setReport(reportData)
+
+        setReport({
+          report_id: "1", // Will be generated on backend
+          user_id: profile.user_id,
+          survey_report: null,
+          chat_report: null
+        })
+        // const reportData = await getReportByUserId(profile.user_id)
+        // setReport(reportData)
+        //TODO:can save the reports in the table before hand and just fetch them if that functionality is needed
+
+        await Promise.all([generateSurveyReport(), generateChatReport()])
       } catch (err: any) {
         console.error("Error fetching report:", err)
         setError(err.message)
@@ -95,7 +182,7 @@ const ReportPage = () => {
       }
     }
 
-    fetchReport()
+    generateReports()
   }, [profile?.user_id])
 
   const generatePDF = async (content: string, title: string) => {
@@ -163,7 +250,7 @@ const ReportPage = () => {
       <div className="flex size-full items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <IconLoader2 className="size-12 animate-spin" />
-          <p>Loading report...</p>
+          <p>Generating report...</p>
         </div>
       </div>
     )
@@ -182,7 +269,11 @@ const ReportPage = () => {
       <div className="flex h-full flex-col gap-4">
         <ReportCard
           ref={surveyReportRef}
-          title="Survey Summary"
+          title={
+            isSurveyReportGenerating
+              ? "Generating Survey Summary..."
+              : "Survey Summary"
+          }
           content={report?.survey_report ?? null}
           onDownload={() =>
             generatePDF(report?.survey_report || "", "Survey Summary")
@@ -192,7 +283,11 @@ const ReportPage = () => {
 
         <ReportCard
           ref={chatReportRef}
-          title="Chat Summary"
+          title={
+            isChatReportGenerating
+              ? "Generating Chat Summary..."
+              : "Chat Summary"
+          }
           content={report?.chat_report ?? null}
           onDownload={() =>
             generatePDF(report?.chat_report || "", "Chat Summary")

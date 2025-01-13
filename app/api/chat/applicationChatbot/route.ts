@@ -66,7 +66,6 @@ export async function POST(request: Request) {
 
           for (const line of lines) {
             if (!line.trim()) continue
-            console.log("****line*****", line)
 
             // If buffer is empty, start with this line
             // If buffer is not empty, append this line
