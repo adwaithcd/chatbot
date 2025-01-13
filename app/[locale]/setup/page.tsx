@@ -58,6 +58,7 @@ export default function SetupPage() {
   )
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null)
   const [imageError, setImageError] = useState(false)
+  const surveyRequired = process.env.NEXT_PUBLIC_SURVEY_REQUIRED ?? "0"
 
   useEffect(() => {
     ;(async () => {
@@ -81,7 +82,10 @@ export default function SetupPage() {
             profile.user_id
           )
           // if user has completed the survey, redirect to chat
-          if (surveyResponse && surveyResponse.step_completed >= 5) {
+          if (
+            (surveyResponse && surveyResponse.step_completed >= 5) ||
+            surveyRequired === "0"
+          ) {
             const homeWorkspaceId = await getHomeWorkspaceByUserId(
               session.user.id
             )
@@ -220,7 +224,11 @@ export default function SetupPage() {
     setSelectedWorkspace(homeWorkspace!)
     setWorkspaces(workspaces)
 
-    return router.push("/survey")
+    if (surveyRequired === "1") {
+      return router.push("/survey")
+    }
+
+    return router.push(`/${homeWorkspace?.id}/chat`)
   }
 
   if (loading) {

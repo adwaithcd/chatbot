@@ -83,17 +83,19 @@ export default async function Login({
       return redirect(`/login?message=${error.message}`)
     }
 
-    //check if the survey is complete, else redirect to survey
-    const { data: surveyResponse } = await supabase
-      .from("survey_responses")
-      .select("step_completed")
-      .eq("user_id", data.user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single()
+    if (surveyRequired === "1") {
+      //check if the survey is complete, else redirect to survey
+      const { data: surveyResponse } = await supabase
+        .from("survey_responses")
+        .select("step_completed")
+        .eq("user_id", data.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
 
-    if (!surveyResponse || surveyResponse.step_completed < 5) {
-      return redirect("/survey")
+      if (!surveyResponse || surveyResponse.step_completed < 5) {
+        return redirect("/survey")
+      }
     }
 
     const { data: homeWorkspace, error: homeWorkspaceError } = await supabase

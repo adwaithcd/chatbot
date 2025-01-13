@@ -136,7 +136,7 @@ async function formatSurveyData(userId: string) {
 }
 
 function generateSurveyPrompt(data: any) {
-  return `Generate a personalized summary report of this student's college application journey based on their survey responses in second person:
+  return `Here is response given by the student for the survey:
 
 ${data.background.applicationYear ? `Application Year: ${data.background.applicationYear}` : ""}
 
@@ -188,5 +188,5 @@ ${data.challenges.map((challenge: any) => `- ${challenge}`).join("\n")}`
     : ""
 }
 
-Make specific references to their chosen major, test scores, and unique circumstances. Format the report in clear sections with bullet points where appropriate.`
+Generate a survey summary report of this student based on their survey responses in second person, use words like your. Make specific references to their chosen major, test scores, and unique circumstances. Format the report in clear sections with bullet points where appropriate.`
 }

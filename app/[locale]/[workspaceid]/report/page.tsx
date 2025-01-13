@@ -29,12 +29,12 @@ const ReportCard = React.forwardRef<
     onShare: () => void
   }
 >(({ title, content, onDownload, onShare }, ref) => (
-  <div className="bg-background/60 flex h-[45%] w-full flex-col rounded-lg p-4">
-    <h2 className="mb-2 text-xl font-medium">{title}</h2>
+  <div className="bg-background/60 flex h-[40%] w-full flex-col rounded-lg px-6 py-4">
+    <h2 className="mb-8 text-xl font-bold">{title}</h2>
 
     <div ref={ref} className="flex-1 overflow-y-auto">
       {content ? (
-        <div className="w-full">
+        <div className="w-full space-y-4">
           <MessageMarkdown content={content} />
         </div>
       ) : (
@@ -46,7 +46,7 @@ const ReportCard = React.forwardRef<
       )}
     </div>
 
-    <div className="mt-2 flex justify-end gap-2">
+    <div className="flex justify-end">
       <Button
         variant="ghost"
         size="sm"
@@ -59,7 +59,7 @@ const ReportCard = React.forwardRef<
         variant="ghost"
         size="sm"
         onClick={onShare}
-        className="flex items-center gap-2"
+        className="flex items-center"
       >
         <UilShareAlt className="size-4" />
       </Button>
@@ -265,8 +265,8 @@ const ReportPage = () => {
   }
 
   return (
-    <div className="flex h-screen flex-col p-4">
-      <div className="flex h-full flex-col gap-4">
+    <div className="flex h-screen flex-col p-10">
+      <div className="flex h-full flex-col gap-12">
         <ReportCard
           ref={surveyReportRef}
           title={
