@@ -12,15 +12,12 @@ export async function POST(request: Request) {
   try {
     const { userId } = await request.json()
 
-    // Get the profile to access API key
     const profile = await getServerProfile()
     checkApiKey(profile.google_gemini_api_key, "Google")
 
-    // Initialize Google AI
     const genAI = new GoogleGenerativeAI(profile.google_gemini_api_key || "")
     const model = genAI.getGenerativeModel({ model: "gemini-pro" })
 
-    // Get all messages from all chats for this user
     const messages = await getServerUserMessages(userId)
 
     if (messages.length === 0) {
@@ -68,7 +65,7 @@ export async function POST(request: Request) {
 }
 
 function generateChatPrompt(messages: any[]) {
-  return `Based on the user's chat history, generate a comprehensive analysis of their interactions and key themes in second person. Here are their messages:
+  return `Here are the user's messages with an LLM which helps with applications:
 
 ${messages.map(msg => `- ${msg.content}`).join("\n")}
 
@@ -79,5 +76,5 @@ Please provide a detailed report that includes:
 4. List of universities that may interest them
 5. Scholarship information if any
 
-Format the report with clear sections and bullet points for easy reading.`
+Based on the user's chat history, generate a comprehensive analysis of their interactions and key themes in second person. Format the report with clear sections and bullet points for easy reading.`
 }
